@@ -5065,7 +5065,13 @@ impl AccountsDb {
             AccountIndexGetResult::Found(lock, index) => (lock, index),
             // we bail out pretty early for missing.
             AccountIndexGetResult::NotFound => {
-                //TODO: hypergrid: consider adding a cache for missing accounts
+                // hypergrid: adding a cache for missing accounts
+                // println!("******AccountsDb.read_index_for_accessor_or_load_slow: {}, {:?}", pubkey.to_string(), ancestors);
+                if ancestors.len() > 1 && self.accounts_cache.has_account_from_remote(pubkey) {
+                    //if pubkey.to_string().eq("13Sf7BzgXeakbweqm4mhbAWrfVYyUWXgUKo29p64wRgZ") || pubkey.to_string().eq("96vfzXu17UQMRfaRjSzrJFTnSYkifUjoFSB6i9wbbqM8"){
+                    println!("******AccountsDb.read_index_for_accessor_or_load_slow: {}", pubkey.to_string());
+                    return Some((0, StorageLocation::Cached, None));
+                }
                 return None;
             }
         };

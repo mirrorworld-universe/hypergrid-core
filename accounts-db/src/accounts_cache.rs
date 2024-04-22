@@ -1,5 +1,6 @@
 use {
     crate::{accounts_db::AccountsDb, accounts_hash::AccountHash},
+    crate::remote_loader::RemoteAccountLoader,
     dashmap::DashMap,
     seqlock::SeqLock,
     solana_sdk::{
@@ -162,6 +163,7 @@ pub struct AccountsCache {
     maybe_unflushed_roots: RwLock<BTreeSet<Slot>>,
     max_flushed_root: AtomicU64,
     total_size: Arc<AtomicU64>,
+    remote_loader: RemoteAccountLoader,
 }
 
 impl AccountsCache {
@@ -224,8 +226,32 @@ impl AccountsCache {
     }
 
     pub fn load(&self, slot: Slot, pubkey: &Pubkey) -> Option<CachedAccount> {
-        self.slot_cache(slot)
-            .and_then(|slot_cache| slot_cache.get_cloned(pubkey))
+        // self.slot_cache(slot)
+        //     .and_then(|slot_cache| slot_cache.get_cloned(pubkey))
+        match self.slot_cache(slot)
+            .and_then(|slot_cache| slot_cache.get_cloned(pubkey)) {
+            Some(account) => {
+                if account.pubkey().to_string().eq("13Sf7BzgXeakbweqm4mhbAWrfVYyUWXgUKo29p64wRgZ") {
+                    println!("******AccountCache.load(): {}, {}, {:?}\n", slot, pubkey.to_string(), account);
+                }
+                Some(account)
+            },
+            None => {
+                let account = self.remote_loader.get_account(pubkey);
+                match account {
+                    Some(acc) => {
+                        Some(self.store(slot, pubkey, acc))
+                    },
+                    None => None,
+                }
+                // None
+            },
+        }
+    }
+
+    pub fn has_account_from_remote(&self, pubkey: &Pubkey) -> bool {
+        // panic!("has_account_from_remote() not implemented");
+        self.remote_loader.has_account(pubkey)
     }
 
     pub fn remove_slot(&self, slot: Slot) -> Option<SlotCache> {

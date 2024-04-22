@@ -4545,6 +4545,10 @@ impl Bank {
                     upgrade_authority_address: _,
                 }) = programdata.state()
                 {
+                    if programdata.remote { 
+                        println!("Bank.program_modification_slot(): {}", slot);
+                        return Ok(0); //dep_slot
+                    }
                     return Ok(slot);
                 }
             }
@@ -4689,6 +4693,10 @@ impl Bank {
                 .get(UpgradeableLoaderState::size_of_programdata_metadata()..)
                 .ok_or(Box::new(InstructionError::InvalidAccountData).into())
                 .and_then(|programdata| {
+                    let mut dep_slot = slot;
+                    if program_account.remote { //pubkey.to_string().eq("13Sf7BzgXeakbweqm4mhbAWrfVYyUWXgUKo29p64wRgZ") {
+                        dep_slot = 0;
+                    }
                     Self::load_program_from_bytes(
                         &mut load_program_metrics,
                         programdata,
@@ -4697,7 +4705,7 @@ impl Bank {
                             .data()
                             .len()
                             .saturating_add(programdata_account.data().len()),
-                        slot,
+                        dep_slot,
                         environments.program_runtime_v1.clone(),
                         reload,
                     )
@@ -4709,12 +4717,16 @@ impl Bank {
                 .get(LoaderV4State::program_data_offset()..)
                 .ok_or(Box::new(InstructionError::InvalidAccountData).into())
                 .and_then(|elf_bytes| {
+                    let mut dep_slot = slot;
+                    if program_account.remote { //pubkey.to_string().eq("13Sf7BzgXeakbweqm4mhbAWrfVYyUWXgUKo29p64wRgZ") {
+                        dep_slot = 0;
+                    }
                     Self::load_program_from_bytes(
                         &mut load_program_metrics,
                         elf_bytes,
                         &loader_v4::id(),
                         program_account.data().len(),
-                        slot,
+                        dep_slot,
                         environments.program_runtime_v2.clone(),
                         reload,
                     )
