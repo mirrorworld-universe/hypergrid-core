@@ -5065,6 +5065,7 @@ impl AccountsDb {
             AccountIndexGetResult::Found(lock, index) => (lock, index),
             // we bail out pretty early for missing.
             AccountIndexGetResult::NotFound => {
+                //TODO: hypergrid: consider adding a cache for missing accounts
                 return None;
             }
         };
