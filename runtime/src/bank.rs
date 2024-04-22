@@ -4694,7 +4694,7 @@ impl Bank {
                 .ok_or(Box::new(InstructionError::InvalidAccountData).into())
                 .and_then(|programdata| {
                     let mut dep_slot = slot;
-                    if program_account.remote { //pubkey.to_string().eq("13Sf7BzgXeakbweqm4mhbAWrfVYyUWXgUKo29p64wRgZ") {
+                    if program_account.remote {
                         dep_slot = 0;
                     }
                     Self::load_program_from_bytes(
@@ -4718,7 +4718,7 @@ impl Bank {
                 .ok_or(Box::new(InstructionError::InvalidAccountData).into())
                 .and_then(|elf_bytes| {
                     let mut dep_slot = slot;
-                    if program_account.remote { //pubkey.to_string().eq("13Sf7BzgXeakbweqm4mhbAWrfVYyUWXgUKo29p64wRgZ") {
+                    if program_account.remote {
                         dep_slot = 0;
                     }
                     Self::load_program_from_bytes(
