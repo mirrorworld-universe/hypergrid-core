@@ -2,8 +2,9 @@
 use {
     crate::{
         max_slots::MaxSlots, optimistically_confirmed_bank_tracker::OptimisticallyConfirmedBank,
-        parsed_token_accounts::*, rpc_cache::LargestAccountsCache, rpc_health::*,
+        parsed_token_accounts::*, rpc_cache::LargestAccountsCache, rpc_health::*,     
     },
+   
     base64::{prelude::BASE64_STANDARD, Engine},
     bincode::{config::Options, serialize},
     crossbeam_channel::{unbounded, Receiver, Sender},
@@ -111,7 +112,10 @@ use {
         },
         time::Duration,
     },
+    sonic_printer::show,
+
 };
+
 
 pub mod account_resolver;
 
@@ -417,6 +421,75 @@ impl JsonRpcRequestProcessor {
     }
 
     pub fn get_account_info(
+        &self,
+        pubkey: &Pubkey,
+        config: Option<RpcAccountInfoConfig>,
+    ) -> Result<RpcResponse<Option<UiAccount>>> {
+        
+        let RpcAccountInfoConfig {
+            encoding,
+            data_slice,
+            commitment,
+            min_context_slot,
+        } = config.unwrap_or_default();
+        let bank = self.get_bank_with_config(RpcContextConfig {
+            commitment,
+            min_context_slot,
+        })?;
+        let encoding = encoding.unwrap_or(UiAccountEncoding::Binary);
+
+        let response = get_encoded_account(&bank, pubkey, encoding, data_slice, None)?;
+        //show!(file!(), line!(), encoding, response, data_slice);
+        show!(file!(), line!(), commitment.unwrap_or_default());
+        Ok(new_response(&bank, response))
+    }
+
+    // Yusuf -  added this function is_account_exists
+    pub fn is_account_exists(
+        &self,
+        pubkey: &Pubkey,
+        config: Option<RpcAccountInfoConfig>,
+    ) -> Result<RpcResponse<Option<UiAccount>>> {
+        let RpcAccountInfoConfig {
+            encoding,
+            data_slice,
+            commitment,
+            min_context_slot,
+        } = config.unwrap_or_default();
+        let bank = self.get_bank_with_config(RpcContextConfig {
+            commitment,
+            min_context_slot,
+        })?;
+        let encoding = encoding.unwrap_or(UiAccountEncoding::Binary);
+
+        let response = get_encoded_account(&bank, pubkey, encoding, data_slice, None)?;
+        Ok(new_response(&bank, response))
+    }
+
+    // Yusuf -  added this function clone_account
+    pub fn clone_account(
+        &self,
+        pubkey: &Pubkey,
+        config: Option<RpcCloneAccountConfig>,
+    ) -> Result<RpcResponse<Option<UiAccount>>> {
+        let RpcCloneAccountConfig {
+            encoding,
+            data_slice,
+            commitment,
+            min_context_slot,
+        } = config.unwrap_or_default();
+        let bank = self.get_bank_with_config(RpcContextConfig {
+            commitment,
+            min_context_slot,
+        })?;
+        let encoding = encoding.unwrap_or(UiAccountEncoding::Binary);
+
+        let response = get_encoded_account(&bank, pubkey, encoding, data_slice, None)?;
+        Ok(new_response(&bank, response))
+    }
+
+    // Yusuf -  added this function which
+    pub fn which(
         &self,
         pubkey: &Pubkey,
         config: Option<RpcAccountInfoConfig>,
@@ -2961,6 +3034,33 @@ pub mod rpc_accounts {
             config: Option<RpcAccountInfoConfig>,
         ) -> Result<RpcResponse<Option<UiAccount>>>;
 
+        // Yusuf - Added isAccountExists
+        #[rpc(meta, name = "isAccountExists")]
+        fn is_account_exists(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Option<UiAccount>>>;
+
+        // Yusuf - Added cloneAccount
+        #[rpc(meta, name = "cloneAccount")]
+        fn clone_account(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcCloneAccountConfig>,
+        ) -> Result<RpcResponse<Option<UiAccount>>>;
+
+        // Yusuf - Added which
+        #[rpc(meta, name = "which")]
+        fn which(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Option<UiAccount>>>;
+
         #[rpc(meta, name = "getMultipleAccounts")]
         fn get_multiple_accounts(
             &self,
@@ -3008,8 +3108,45 @@ pub mod rpc_accounts {
             config: Option<RpcAccountInfoConfig>,
         ) -> Result<RpcResponse<Option<UiAccount>>> {
             debug!("get_account_info rpc request received: {:?}", pubkey_str);
+            
             let pubkey = verify_pubkey(&pubkey_str)?;
             meta.get_account_info(&pubkey, config)
+        }
+
+        // Yusuf -  Added is_account_exists
+        fn is_account_exists(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Option<UiAccount>>> {
+            debug!("is_account_exists rpc request received: {:?}", pubkey_str);
+            let pubkey = verify_pubkey(&pubkey_str)?;
+            meta.is_account_exists(&pubkey, config)
+        }
+        
+        // Yusuf -  Added clone_account
+        fn clone_account(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcCloneAccountConfig>,
+        ) -> Result<RpcResponse<Option<UiAccount>>> {
+            debug!("clone_account rpc request received: {:?}", pubkey_str);
+            let pubkey = verify_pubkey(&pubkey_str)?;
+            meta.clone_account(&pubkey, config)
+        }
+
+        // Yusuf -  Added which
+        fn which(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Option<UiAccount>>> {
+            debug!("which rpc request received: {:?}", pubkey_str);
+            let pubkey = verify_pubkey(&pubkey_str)?;
+            meta.which(&pubkey, config)
         }
 
         fn get_multiple_accounts(
