@@ -7716,9 +7716,9 @@ dependencies = [
  "bincode",
  "bytemuck",
  "log",
- "num-derive 0.4.1",
+ "num-derive 0.4.2",
  "num-traits",
- "rustc_version 0.4.0",
+ "rustc_version",
  "serde",
  "solana-frozen-abi",
  "solana-frozen-abi-macro",
@@ -7726,6 +7726,13 @@ dependencies = [
  "solana-program-runtime",
  "solana-sdk",
  "thiserror",
+]
+
+[[package]]
+name = "sonic-printer"
+version = "1.18.11"
+dependencies = [
+ "chrono",
 ]
 
 [[package]]
