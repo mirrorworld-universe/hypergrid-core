@@ -5422,7 +5422,7 @@ impl AccountsDb {
             self.read_index_for_accessor_or_load_slow(ancestors, pubkey, max_root, false)?;
         // Notice the subtle `?` at previous line, we bail out pretty early if missing.
 
-        let in_write_cache = storage_location.is_cached();
+        let in_write_cache: bool = storage_location.is_cached();
         if !load_into_read_cache_only {
             if !in_write_cache {
                 let result = self.read_only_accounts_cache.load(*pubkey, slot);
