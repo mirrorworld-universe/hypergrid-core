@@ -440,7 +440,9 @@ impl JsonRpcRequestProcessor {
 
         let response = get_encoded_account(&bank, pubkey, encoding, data_slice, None)?;
         //show!(file!(), line!(), encoding, response, data_slice);
-        show!(file!(), line!(), commitment.unwrap_or_default());
+        show!(file!(), line!(), new_response(&bank, &response));
+        
+        //show!(file!(), line!(), bank.);
         Ok(new_response(&bank, response))
     }
 
@@ -3110,6 +3112,7 @@ pub mod rpc_accounts {
             debug!("get_account_info rpc request received: {:?}", pubkey_str);
             
             let pubkey = verify_pubkey(&pubkey_str)?;
+            show!(file!(), line!(), pubkey);
             meta.get_account_info(&pubkey, config)
         }
 
@@ -3962,6 +3965,7 @@ pub mod rpc_full {
             config: Option<RpcEncodingConfigWrapper<RpcBlockConfig>>,
         ) -> BoxFuture<Result<Option<UiConfirmedBlock>>> {
             debug!("get_block rpc request received: {:?}", slot);
+            show!(file!(), line!(), slot, config);
             Box::pin(async move { meta.get_block(slot, config).await })
         }
 

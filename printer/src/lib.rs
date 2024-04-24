@@ -29,7 +29,7 @@ pub mod show {
     macro_rules! show {
         ($file:expr, $line:expr, $($args: expr),*) => {
             $(
-                print!("[{}] {}:{}:\n{:?}\n", chrono::prelude::Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string(), $file, $line, $args);
+                print!("[{}] {}:{}:\n{:?}\n\n", chrono::prelude::Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string(), $file, $line, $args);
             )*
         }
     }
