@@ -33,6 +33,7 @@
 //! It offers a high-level API that signs transactions
 //! on behalf of the caller, and a low-level API for when they have
 //! already been signed and verified.
+use rand::seq::index;
 #[cfg(feature = "dev-context-only-utils")]
 use solana_accounts_db::accounts_db::{
     ACCOUNTS_DB_CONFIG_FOR_BENCHMARKS, ACCOUNTS_DB_CONFIG_FOR_TESTING,
@@ -4790,6 +4791,13 @@ impl Bank {
     ) -> TransactionExecutionResult {
         let transaction_accounts = std::mem::take(&mut loaded_transaction.accounts);
 
+        if !tx.is_simple_vote_transaction() {
+            for (pubkey, account) in transaction_accounts.iter() {
+                let index = transaction_accounts.iter().position(|(key, _)| key == pubkey).unwrap(); 
+                println!("Bank.execute_loaded_transaction():{:?} remote: {} writable {} ", pubkey, account.remote, tx.message().is_writable(index));
+            }
+        }
+
         fn transaction_accounts_lamports_sum(
             accounts: &[(Pubkey, AccountSharedData)],
             message: &SanitizedMessage,
@@ -4838,6 +4846,9 @@ impl Bank {
             programs_loaded_for_tx_batch.latest_root_epoch,
         );
         let mut process_message_time = Measure::start("process_message_time");
+        if !tx.is_simple_vote_transaction() {
+            println!("MessageProcessor::process_message {:?}", tx.message());
+        }
         let process_result = MessageProcessor::process_message(
             tx.message(),
             &loaded_transaction.program_indices,

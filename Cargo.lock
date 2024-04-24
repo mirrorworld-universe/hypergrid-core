@@ -5998,6 +5998,7 @@ dependencies = [
  "solana-stake-program",
  "solana-system-program",
  "solana-vote-program",
+ "sonic-account-migrater-program",
  "static_assertions",
  "test-case",
 ]
@@ -7084,6 +7085,7 @@ dependencies = [
  "solana-vote-program",
  "solana-zk-token-proof-program",
  "solana-zk-token-sdk",
+ "sonic-account-migrater-program",
  "static_assertions",
  "strum",
  "strum_macros",
@@ -7818,6 +7820,25 @@ dependencies = [
  "scroll",
  "thiserror",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "sonic-account-migrater-program"
+version = "1.18.11"
+dependencies = [
+ "bincode",
+ "bytemuck",
+ "log",
+ "num-derive 0.4.1",
+ "num-traits",
+ "rustc_version 0.4.0",
+ "serde",
+ "solana-frozen-abi",
+ "solana-frozen-abi-macro",
+ "solana-program",
+ "solana-program-runtime",
+ "solana-sdk",
+ "thiserror",
 ]
 
 [[package]]

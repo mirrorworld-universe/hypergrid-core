@@ -94,10 +94,10 @@ impl RemoteAccountLoader {
         if Self::ignored_account(pubkey) {
             return None;
         }
-  
+        println!("RemoteAccountLoader.get_account: {}", pubkey.to_string());
         match self.account_cache.get(pubkey) {
             Some(account) =>    {
-                println!("RemoteAccountLoader.get_account: {}", pubkey.to_string());
+                println!("RemoteAccountLoader.get_account: {} match.", pubkey.to_string());
                 return Some(account.clone());
             },
             None => self.load_account(pubkey),
@@ -161,7 +161,7 @@ impl RemoteAccountLoader {
         );
         account.remote = true;
     
-        // println!("account: {:?}", account);
+        println!("account: {:?}", account);
         Some(account)
     }
     
@@ -175,7 +175,7 @@ impl RemoteAccountLoader {
     }
 
     fn load_account_from_remote(&self, pubkey: &Pubkey) -> Option<AccountSharedData> {
-        if pubkey.to_string().ends_with("1111111111111111") {
+        if Self::ignored_account(pubkey) {
             print!("******* skip: {}\n", pubkey.to_string());
             return None;
         }
@@ -192,9 +192,7 @@ impl RemoteAccountLoader {
                 }
             ]
         });
-        // let runtime = runtime::Builder::new_multi_thread()
-        // .enable_all()
-        // .build().unwrap();
+
         let client = self.client.clone();
         let url = self.url.clone();
         let call = thread::spawn(move || {
