@@ -4546,9 +4546,10 @@ impl Bank {
                     upgrade_authority_address: _,
                 }) = programdata.state()
                 {
+                    //Sonic: if program is remote, set slot to 0.
                     if programdata.remote { 
                         println!("Bank.program_modification_slot(): {}", slot);
-                        return Ok(0); //dep_slot
+                        return Ok(0);
                     }
                     return Ok(slot);
                 }
@@ -4694,6 +4695,7 @@ impl Bank {
                 .get(UpgradeableLoaderState::size_of_programdata_metadata()..)
                 .ok_or(Box::new(InstructionError::InvalidAccountData).into())
                 .and_then(|programdata| {
+                    //Sonic: if program account is remote, set slot to 0.
                     let mut dep_slot = slot;
                     if program_account.remote {
                         dep_slot = 0;
@@ -4718,6 +4720,7 @@ impl Bank {
                 .get(LoaderV4State::program_data_offset()..)
                 .ok_or(Box::new(InstructionError::InvalidAccountData).into())
                 .and_then(|elf_bytes| {
+                    //Sonic: if program account is remote, set slot to 0.
                     let mut dep_slot = slot;
                     if program_account.remote {
                         dep_slot = 0;
@@ -4791,6 +4794,7 @@ impl Bank {
     ) -> TransactionExecutionResult {
         let transaction_accounts = std::mem::take(&mut loaded_transaction.accounts);
 
+        // Sonic: print remote account info
         if !tx.is_simple_vote_transaction() {
             for (pubkey, account) in transaction_accounts.iter() {
                 let index = transaction_accounts.iter().position(|(key, _)| key == pubkey).unwrap(); 

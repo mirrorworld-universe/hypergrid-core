@@ -110,13 +110,13 @@ impl MessageProcessor {
                 let index_in_transaction = *index_in_transaction as usize;
                 let mut is_writable = message.is_writable(index_in_transaction);
 
-                // Check if the account is a remote account
+                // Sonic: Check if the account is a remote account
                 let pubkey = message.account_keys().get(index_in_transaction).unwrap();
                 if let Some(index) = invoke_context.transaction_context.find_index_of_account(&pubkey) {
                     let account = invoke_context.transaction_context.
                         get_account_at_index(index).unwrap();
                     if account.borrow().remote {
-                        // If the account is a remote account, it is always not writable.
+                        // Sonic: If the account is a remote account, it is always not writable.
                         is_writable = false;     
                     }
                 }

@@ -454,6 +454,7 @@ pub fn program(ledger_path: &Path, matches: &ArgMatches<'_>) {
                 let space = data.len();
                 let account = if let Some(account) = bank.get_account_with_fixed_root(&pubkey) {
                     let owner = *account.owner();
+                    // Sonic: get remote flag from account
                     let remote = account.remote;
                     if remote {
                         println!("program(): Remote account {:?}", account);
@@ -478,7 +479,7 @@ pub fn program(ledger_path: &Path, matches: &ArgMatches<'_>) {
                         let lamports = account_info.lamports.unwrap_or(account.lamports());
                         let mut account: AccountSharedData = AccountSharedData::new(lamports, space, &owner);
                         account.set_data_from_slice(&data);
-                        account.remote = remote;
+                        account.remote = remote; // Sonic: set remote flag from input file
                         account
                     } else {
                         account
@@ -496,6 +497,7 @@ pub fn program(ledger_path: &Path, matches: &ArgMatches<'_>) {
                     account.set_data_from_slice(&data);
                     account
                 };
+                // Sonic: get remote flag from account
                 let remote = account.remote;
                 transaction_accounts.push((pubkey, account));
                 instruction_accounts.push(InstructionAccount {
@@ -503,7 +505,7 @@ pub fn program(ledger_path: &Path, matches: &ArgMatches<'_>) {
                     index_in_caller: index as IndexOfAccount,
                     index_in_callee: index as IndexOfAccount,
                     is_signer: account_info.is_signer.unwrap_or(false),
-                    is_writable: !remote && account_info.is_writable.unwrap_or(false),
+                    is_writable: account_info.is_writable.unwrap_or(false) && !remote, // Sonic: writable only if not remote
                 });
             }
             input.instruction_data

@@ -28,10 +28,15 @@ type AccountCacheKeyMap = DashMap<Pubkey, AccountSharedData>;
 
 #[derive(Debug)]
 pub struct RemoteAccountLoader {
+    /// HTTP client used to send requests to the remote.
     client: reqwest::blocking::Client,
     // client: reqwest::Client,
+    /// URL of the remote to load accounts from.
     url: String,
+    /// Cache of accounts loaded from the remote.
     account_cache: AccountCacheKeyMap,
+    /// Enable or disable the remote loader.
+    enable: bool,
 }
 
 impl Default for RemoteAccountLoader {
@@ -62,7 +67,8 @@ impl RemoteAccountLoader {
             //     .pool_idle_timeout(timeout)
             //     .build()
             //     .expect("build rpc client"),
-            account_cache: AccountCacheKeyMap::default(),  
+            account_cache: AccountCacheKeyMap::default(),
+            enable: true,
         }
     }
 
@@ -91,7 +97,7 @@ impl RemoteAccountLoader {
         false
     }
     pub fn get_account(&self, pubkey: &Pubkey) -> Option<AccountSharedData> {
-        if Self::ignored_account(pubkey) {
+        if !self.enable || Self::ignored_account(pubkey) {
             return None;
         }
         println!("RemoteAccountLoader.get_account: {}", pubkey.to_string());
@@ -105,7 +111,7 @@ impl RemoteAccountLoader {
     }
 
     pub fn has_account(&self, pubkey: &Pubkey) -> bool {
-        if Self::ignored_account(pubkey) {
+        if !self.enable || Self::ignored_account(pubkey) {
             return false;
         }
         println!("RemoteAccountLoader.has_account: {}", pubkey.to_string());
@@ -167,9 +173,9 @@ impl RemoteAccountLoader {
     
 
     pub fn load_account(&self, pubkey: &Pubkey) -> Option<AccountSharedData> {
-        // if let Some(account) = self.get_account(pubkey) {
-        //     return Some(account);
-        // }
+        if !self.enable || Self::ignored_account(pubkey) {
+            return None;
+        }
         self.load_account_from_remote(pubkey)
         // self.load_account_from_tests(pubkey)
     }

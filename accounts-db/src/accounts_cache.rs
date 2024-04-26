@@ -1,6 +1,6 @@
 use {
     crate::{accounts_db::AccountsDb, accounts_hash::AccountHash},
-    crate::remote_loader::RemoteAccountLoader,
+    crate::remote_loader::RemoteAccountLoader, //Sonic: using RemoteAccountLoader
     dashmap::DashMap,
     seqlock::SeqLock,
     solana_sdk::{
@@ -163,7 +163,7 @@ pub struct AccountsCache {
     maybe_unflushed_roots: RwLock<BTreeSet<Slot>>,
     max_flushed_root: AtomicU64,
     total_size: Arc<AtomicU64>,
-    remote_loader: RemoteAccountLoader,
+    remote_loader: RemoteAccountLoader, //Sonic: using RemoteAccountLoader
 }
 
 impl AccountsCache {
@@ -231,15 +231,14 @@ impl AccountsCache {
         match self.slot_cache(slot)
             .and_then(|slot_cache| slot_cache.get_cloned(pubkey)) {
             Some(account) => {
-                if account.pubkey().to_string().eq("13Sf7BzgXeakbweqm4mhbAWrfVYyUWXgUKo29p64wRgZ") {
-                    println!("******AccountCache.load(): {}, {}, {:?}\n", slot, pubkey.to_string(), account);
-                }
                 Some(account)
             },
             None => {
+                //Sonic: load from remote
                 let account = self.remote_loader.get_account(pubkey);
                 match account {
                     Some(acc) => {
+                        //Sonic: store into cache
                         Some(self.store(slot, pubkey, acc))
                     },
                     None => None,
@@ -249,8 +248,8 @@ impl AccountsCache {
         }
     }
 
+    //Sonic: check if account exists in remote
     pub fn has_account_from_remote(&self, pubkey: &Pubkey) -> bool {
-        // panic!("has_account_from_remote() not implemented");
         self.remote_loader.has_account(pubkey)
     }
 
