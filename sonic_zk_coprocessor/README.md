@@ -1,147 +1,41 @@
-<p align="center">
-  <a href="https://solana.com">
-    <img alt="Solana" src="https://i.imgur.com/IKyzQ6T.png" width="250" />
-  </a>
-</p>
+# System Name
 
-[![Solana crate](https://img.shields.io/crates/v/solana-core.svg)](https://crates.io/crates/solana-core)
-[![Solana documentation](https://docs.rs/solana-core/badge.svg)](https://docs.rs/solana-core)
-[![Build status](https://badge.buildkite.com/8cc350de251d61483db98bdfc895b9ea0ac8ffa4a32ee850ed.svg?branch=master)](https://buildkite.com/solana-labs/solana/builds?branch=master)
-[![codecov](https://codecov.io/gh/solana-labs/solana/branch/master/graph/badge.svg)](https://codecov.io/gh/solana-labs/solana)
+Sonic ZK-CoProcessor
+[![License]()](LICENSE)
 
-# Building
+## Description
 
-## **1. Install rustc, cargo and rustfmt.**
+The Zero-Knowledge Coprocessor (ZK Coprocessor) currently under development within the HyperGrid system is envisioned to play a pivotal role in enhancing privacy, security, and efficiency in transaction processing. As we continue our research and development efforts, we aim to achieve the following objectives:
 
-```bash
-$ curl https://sh.rustup.rs -sSf | sh
-$ source $HOME/.cargo/env
-$ rustup component add rustfmt
-```
+1. Privacy Preservation: The ZK Coprocessor will employ advanced cryptographic techniques, such as Zero-Knowledge Proofs (ZKPs), to enable transaction verification without revealing sensitive data. By ensuring that validators can verify the integrity of state transitions without accessing confidential information, we prioritize user privacy within the HyperGrid ecosystem.
 
-When building the master branch, please make sure you are using the latest stable rust version by running:
+2. Trustless Transaction Verification: Through the implementation of Zero-Knowledge Proofs, we aim to establish a trustless environment where validators can securely verify the validity of state transitions without relying on trust or compromising the integrity of the network. This trustless verification process will enhance the overall security and reliability of transaction processing within HyperGrid.
 
-```bash
-$ rustup update
-```
+3. Efficient Transaction Validation: Our research and development efforts are focused on optimizing the ZK Coprocessor to efficiently validate state transitions across multiple Grids within the HyperGrid system. By minimizing computational overhead and streamlining transaction validation processes, we aim to contribute to the scalability and efficiency of transaction processing on the HyperGrid platform.
 
-When building a specific release branch, you should check the rust version in `ci/rust-version.sh` and if necessary, install that version by running:
-```bash
-$ rustup install VERSION
-```
-Note that if this is not the latest rust version on your machine, cargo commands may require an [override](https://rust-lang.github.io/rustup/overrides.html) in order to use the correct version.
+4. Robust Security Measures: Security is paramount in blockchain systems, and the ZK Coprocessor will integrate robust security measures to safeguard against unauthorized access and malicious activities. By leveraging advanced cryptographic techniques and implementing stringent security protocols, we aim to enhance the overall security posture of the HyperGrid ecosystem.
 
-On Linux systems you may need to install libssl-dev, pkg-config, zlib1g-dev, protobuf etc.
+As we continue to advance our research and development efforts, we remain committed to building a state-of-the-art Zero-Knowledge Coprocessor that will serve as a cornerstone of privacy, security, and efficiency within the HyperGrid system. Our goal is to deliver innovative solutions that empower users, developers, and stakeholders within the Solana ecosystem while upholding the highest standards of privacy and security.
 
-On Ubuntu:
-```bash
-$ sudo apt-get update
-$ sudo apt-get install libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang cmake make libprotobuf-dev protobuf-compiler
-```
+## Table of Contents
 
-On Fedora:
-```bash
-$ sudo dnf install openssl-devel systemd-devel pkg-config zlib-devel llvm clang cmake make protobuf-devel protobuf-compiler perl-core
-```
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
-## **2. Download the source code.**
+## Installation
 
-```bash
-$ git clone https://github.com/solana-labs/solana.git
-$ cd solana
-```
 
-## **3. Build.**
 
-```bash
-$ ./cargo build
-```
+## Usage
 
-# Testing
 
-**Run the test suite:**
 
-```bash
-$ ./cargo test
-```
+## Contributing
 
-### Starting a local testnet
 
-Start your own testnet locally, instructions are in the [online docs](https://docs.solanalabs.com/clusters/benchmark).
 
-### Accessing the remote development cluster
+## License
 
-* `devnet` - stable public cluster for development accessible via
-devnet.solana.com. Runs 24/7. Learn more about the [public clusters](https://docs.solanalabs.com/clusters)
-
-# Benchmarking
-
-First, install the nightly build of rustc. `cargo bench` requires the use of the
-unstable features only available in the nightly build.
-
-```bash
-$ rustup install nightly
-```
-
-Run the benchmarks:
-
-```bash
-$ cargo +nightly bench
-```
-
-# Release Process
-
-The release process for this project is described [here](RELEASE.md).
-
-# Code coverage
-
-To generate code coverage statistics:
-
-```bash
-$ scripts/coverage.sh
-$ open target/cov/lcov-local/index.html
-```
-
-Why coverage? While most see coverage as a code quality metric, we see it primarily as a developer
-productivity metric. When a developer makes a change to the codebase, presumably it's a *solution* to
-some problem.  Our unit-test suite is how we encode the set of *problems* the codebase solves. Running
-the test suite should indicate that your change didn't *infringe* on anyone else's solutions. Adding a
-test *protects* your solution from future changes. Say you don't understand why a line of code exists,
-try deleting it and running the unit-tests. The nearest test failure should tell you what problem
-was solved by that code. If no test fails, go ahead and submit a Pull Request that asks, "what
-problem is solved by this code?" On the other hand, if a test does fail and you can think of a
-better way to solve the same problem, a Pull Request with your solution would most certainly be
-welcome! Likewise, if rewriting a test can better communicate what code it's protecting, please
-send us that patch!
-
-# Disclaimer
-
-All claims, content, designs, algorithms, estimates, roadmaps,
-specifications, and performance measurements described in this project
-are done with the Solana Labs, Inc. (“SL”) good faith efforts. It is up to
-the reader to check and validate their accuracy and truthfulness.
-Furthermore, nothing in this project constitutes a solicitation for
-investment.
-
-Any content produced by SL or developer resources that SL provides are
-for educational and inspirational purposes only. SL does not encourage,
-induce or sanction the deployment, integration or use of any such
-applications (including the code comprising the Solana blockchain
-protocol) in violation of applicable laws or regulations and hereby
-prohibits any such deployment, integration or use. This includes the use of
-any such applications by the reader (a) in violation of export control
-or sanctions laws of the United States or any other applicable
-jurisdiction, (b) if the reader is located in or ordinarily resident in
-a country or territory subject to comprehensive sanctions administered
-by the U.S. Office of Foreign Assets Control (OFAC), or (c) if the
-reader is or is working on behalf of a Specially Designated National
-(SDN) or a person subject to similar blocking or denied party
-prohibitions.
-
-The reader should be aware that U.S. export control and sanctions laws prohibit 
-U.S. persons (and other persons that are subject to such laws) from transacting 
-with persons in certain countries and territories or that are on the SDN list. 
-Accordingly, there is a risk to individuals that other persons using any of the 
-code contained in this repo, or a derivation thereof, may be sanctioned persons 
-and that transactions with such persons would be a violation of U.S. export 
-controls and sanctions law.
+This project is licensed under the [XXX License](LICENSE).
