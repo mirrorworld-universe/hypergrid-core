@@ -76,6 +76,8 @@ use {
         str::FromStr,
         sync::Arc,
     },
+    sonic_printer::show,
+     
 };
 
 pub const CLOSE_PROGRAM_WARNING: &str = "WARNING! Closed programs cannot be recreated at the same \
@@ -1128,7 +1130,7 @@ fn process_program_deploy(
 ) -> ProcessResult {
     let fee_payer_signer = config.signers[fee_payer_signer_index];
     let upgrade_authority_signer = config.signers[upgrade_authority_signer_index];
-
+    show!(file!(), line!(), program_location);
     let (buffer_words, buffer_mnemonic, buffer_keypair) = create_ephemeral_keypair()?;
     let (buffer_provided, buffer_signer, buffer_pubkey) = if let Some(i) = buffer_signer_index {
         (true, Some(config.signers[i]), config.signers[i].pubkey())
@@ -1143,6 +1145,7 @@ fn process_program_deploy(
     };
 
     let default_program_keypair = get_default_program_keypair(program_location);
+
     let (program_signer, program_pubkey) = if let Some(i) = program_signer_index {
         (Some(config.signers[i]), config.signers[i].pubkey())
     } else if let Some(program_pubkey) = program_pubkey {
@@ -1219,6 +1222,7 @@ fn process_program_deploy(
     let (program_data, program_len) = if let Some(program_location) = program_location {
         let program_data = read_and_verify_elf(program_location)?;
         let program_len = program_data.len();
+        // show!(file!(), line!(), program_data );
         (program_data, program_len)
     } else if buffer_provided {
         (
@@ -1228,6 +1232,7 @@ fn process_program_deploy(
     } else {
         return Err("Program location required if buffer not supplied".into());
     };
+
     let program_data_max_len = if let Some(len) = max_len {
         if program_len > len {
             return Err(
@@ -1239,16 +1244,19 @@ fn process_program_deploy(
         program_len
     };
 
+    
+
     let min_rent_exempt_program_data_balance = rpc_client.get_minimum_balance_for_rent_exemption(
         UpgradeableLoaderState::size_of_programdata(program_data_max_len),
     )?;
-
+    show!(file!(), line!(), min_rent_exempt_program_data_balance);
     let result = if do_initial_deploy {
         if program_signer.is_none() {
             return Err(
                 "Initial deployments require a keypair be provided for the program id".into(),
             );
         }
+        show!(file!(), line!(), "do_process_program_write_and_deploy");
         do_process_program_write_and_deploy(
             rpc_client.clone(),
             config,
@@ -2284,7 +2292,7 @@ fn do_process_program_write_and_deploy(
     } else {
         None
     };
-
+    show!(file!(), line!(), initial_message);    
     // Create and add write messages
     let create_msg = |offset: u32, bytes: Vec<u8>| {
         let instruction = if loader_id == &bpf_loader_upgradeable::id() {
@@ -2311,6 +2319,7 @@ fn do_process_program_write_and_deploy(
             write_messages.push(create_msg(offset as u32, chunk.to_vec()));
         }
     }
+    show!(file!(), line!(), write_messages);    
 
     // Create and add final message
     let final_message = if let Some(program_signers) = program_signers {
@@ -2337,7 +2346,7 @@ fn do_process_program_write_and_deploy(
     } else {
         None
     };
-
+    show!(file!(), line!(), final_message);    
     if !skip_fee_check {
         check_payer(
             &rpc_client,
@@ -2349,7 +2358,7 @@ fn do_process_program_write_and_deploy(
             &final_message,
         )?;
     }
-
+    show!(file!(), line!(), "start_send_deploy_messages()"); 
     send_deploy_messages(
         rpc_client,
         config,
@@ -2362,6 +2371,7 @@ fn do_process_program_write_and_deploy(
         program_signers,
         max_sign_attempts,
     )?;
+    show!(file!(), line!(), final_message);    
 
     if let Some(program_signers) = program_signers {
         let program_id = CliProgramId {
@@ -2704,32 +2714,36 @@ fn send_deploy_messages(
     final_signers: Option<&[&dyn Signer]>,
     max_sign_attempts: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    show!(file!(), line!(), initial_message );
     if let Some(message) = initial_message {
         if let Some(initial_signer) = initial_signer {
             trace!("Preparing the required accounts");
-
+            show!(file!(), line!(), "Preparing the required accounts" );
             let mut initial_transaction = Transaction::new_unsigned(message.clone());
             simulate_and_update_compute_unit_limit(&rpc_client, &mut initial_transaction)?;
 
             let blockhash = rpc_client.get_latest_blockhash()?;
-
+            show!(file!(), line!(), blockhash );
             // Most of the initial_transaction combinations require both the fee-payer and new program
             // account to sign the transaction. One (transfer) only requires the fee-payer signature.
             // This check is to ensure signing does not fail on a KeypairPubkeyMismatch error from an
             // extraneous signature.
+            show!(file!(), line!(), message.header.num_required_signatures );
             if message.header.num_required_signatures == 2 {
                 initial_transaction.try_sign(&[fee_payer_signer, initial_signer], blockhash)?;
             } else {
                 initial_transaction.try_sign(&[fee_payer_signer], blockhash)?;
             }
+            show!(file!(), line!(), initial_transaction );
             let result = rpc_client.send_and_confirm_transaction_with_spinner(&initial_transaction);
+            show!(file!(), line!(), result );
             log_instruction_custom_error::<SystemError>(result, config)
                 .map_err(|err| format!("Account allocation failed: {err}"))?;
         } else {
             return Err("Buffer account not created yet, must provide a key pair".into());
         }
     }
-
+    show!(file!(), line!(), write_messages );
     if !write_messages.is_empty() {
         if let Some(write_signer) = write_signer {
             trace!("Writing program data");
@@ -2811,7 +2825,7 @@ fn send_deploy_messages(
             }
         }
     }
-
+    show!(file!(), line!(), final_message );
     if let Some(message) = final_message {
         if let Some(final_signers) = final_signers {
             trace!("Deploying program");

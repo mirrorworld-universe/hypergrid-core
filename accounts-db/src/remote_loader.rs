@@ -68,7 +68,7 @@ impl RemoteAccountLoader {
             //     .build()
             //     .expect("build rpc client"),
             account_cache: AccountCacheKeyMap::default(),
-            enable: true,
+            enable: false,
         }
     }
 

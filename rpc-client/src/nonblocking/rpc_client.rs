@@ -64,6 +64,7 @@ use {
         time::{Duration, Instant},
     },
     tokio::{sync::RwLock, time::sleep},
+    sonic_printer::show,
 };
 
 /// A client of a remote Solana node.
@@ -760,11 +761,14 @@ impl RpcClient {
         } else {
             *transaction.get_recent_blockhash()
         };
+        show!(file!(), line!(), recent_blockhash);
         let signature = self
             .send_transaction_with_config(transaction, config)
             .await?;
+        show!(file!(), line!(), signature);
         self.confirm_transaction_with_spinner(&signature, &recent_blockhash, commitment)
             .await?;
+        show!(file!(), line!(), "final");
         Ok(signature)
     }
 
@@ -1161,30 +1165,35 @@ impl RpcClient {
         ));
 
         let now = Instant::now();
+        show!(file!(), line!(), "trace");
         let confirm_transaction_initial_timeout = self
             .config
             .confirm_transaction_initial_timeout
             .unwrap_or_default();
+        show!(file!(), line!(), confirm_transaction_initial_timeout);
         let (signature, status) = loop {
             // Get recent commitment in order to count confirmations for successful transactions
             let status = self
                 .get_signature_status_with_commitment(signature, CommitmentConfig::processed())
                 .await?;
+            show!(file!(), line!(), status);
             if status.is_none() {
                 let blockhash_not_found = !self
                     .is_blockhash_valid(recent_blockhash, CommitmentConfig::processed())
                     .await?;
+                show!(file!(), line!(), blockhash_not_found);
                 if blockhash_not_found && now.elapsed() >= confirm_transaction_initial_timeout {
                     break (signature, status);
                 }
             } else {
                 break (signature, status);
             }
-
+            show!(file!(), line!(), "trace");
             if cfg!(not(test)) {
-                sleep(Duration::from_millis(500)).await;
+                sleep(Duration::from_millis(1000)).await;
             }
         };
+        show!(file!(), line!(), "trace");
         if let Some(result) = status {
             if let Err(err) = result {
                 return Err(err.into());
@@ -1198,10 +1207,13 @@ impl RpcClient {
             )
             .into());
         }
+        show!(file!(), line!(), "trace");
         let now = Instant::now();
+        show!(file!(), line!(), "xxx");
         loop {
             // Return when specified commitment is reached
             // Failed transactions have already been eliminated, `is_some` check is sufficient
+            
             if self
                 .get_signature_status_with_commitment(signature, commitment)
                 .await?
@@ -1211,18 +1223,21 @@ impl RpcClient {
                 progress_bar.finish_and_clear();
                 return Ok(());
             }
-
+            show!(file!(), line!(), "aaa");
             progress_bar.set_message(format!(
                 "[{}/{}] Finalizing transaction {}",
                 min(confirmations + 1, desired_confirmations),
                 desired_confirmations,
                 signature,
             ));
-            sleep(Duration::from_millis(500)).await;
+            show!(file!(), line!(), "bbb");
+            sleep(Duration::from_millis(1000)).await;
+            show!(file!(), line!(), "ccc");
             confirmations = self
                 .get_num_blocks_since_signature_confirmation(signature)
                 .await
                 .unwrap_or(confirmations);
+            show!(file!(), line!(), confirmations);
             if now.elapsed().as_secs() >= MAX_HASH_AGE_IN_SECONDS as u64 {
                 return Err(
                     RpcError::ForUser("transaction not finalized. \
@@ -1743,12 +1758,14 @@ impl RpcClient {
         signature: &Signature,
         commitment_config: CommitmentConfig,
     ) -> ClientResult<Option<transaction::Result<()>>> {
+        show!(file!(), line!(), signature);
         let result: Response<Vec<Option<TransactionStatus>>> = self
             .send(
                 RpcRequest::GetSignatureStatuses,
                 json!([[signature.to_string()]]),
             )
             .await?;
+        show!(file!(), line!(), result);
         Ok(result.value[0]
             .clone()
             .filter(|result| result.satisfies_commitment(commitment_config))
@@ -5360,15 +5377,19 @@ impl RpcClient {
     where
         T: serde::de::DeserializeOwned,
     {
+        show!(file!(), line!(), request);
         assert!(params.is_array() || params.is_null());
-
+        show!(file!(), line!(), params);
         let response = self
             .sender
             .send(request, params)
             .await
             .map_err(|err| err.into_with_request(request))?;
+        
+        show!(file!(), line!(), response);
         serde_json::from_value(response)
-            .map_err(|err| ClientError::new_with_request(err.into(), request))
+                    .map_err(|err| ClientError::new_with_request(err.into(), request))
+   
     }
 
     pub fn get_transport_stats(&self) -> RpcTransportStats {

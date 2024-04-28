@@ -50,6 +50,8 @@ use {
         thread::sleep,
         time::Duration,
     },
+    sonic_printer::show,
+
 };
 
 /// Allocation is a helper (mostly for tests), prefer using TypedAllocation instead when possible.
@@ -698,7 +700,7 @@ fn finalize_transactions(
     if dry_run {
         return Ok(None);
     }
-
+    show!(file!(), line!(), "commands");
     let mut opt_confirmations = update_finalized_transactions(client, db, exit.clone())?;
 
     let progress_bar = new_spinner_progress_bar();
@@ -710,7 +712,7 @@ fn finalize_transactions(
                 confirmations, 32,
             ));
         }
-
+        
         // Sleep for about 1 slot
         sleep(Duration::from_millis(500));
         let opt_conf = update_finalized_transactions(client, db, exit.clone())?;
