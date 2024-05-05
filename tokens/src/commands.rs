@@ -50,7 +50,7 @@ use {
         thread::sleep,
         time::Duration,
     },
-    sonic_printer::show,
+    sonic_printer::{show, func},
 
 };
 
@@ -700,7 +700,7 @@ fn finalize_transactions(
     if dry_run {
         return Ok(None);
     }
-    show!(file!(), line!(), "commands");
+    show!(file!(), line!(), func!(), "commands");
     let mut opt_confirmations = update_finalized_transactions(client, db, exit.clone())?;
 
     let progress_bar = new_spinner_progress_bar();

@@ -112,7 +112,7 @@ use {
         },
         time::Duration,
     },
-    sonic_printer::show,
+    sonic_printer::{show, func},
 
 };
 
@@ -437,12 +437,13 @@ impl JsonRpcRequestProcessor {
             min_context_slot,
         })?;
         let encoding = encoding.unwrap_or(UiAccountEncoding::Binary);
-
+        show!(file!(), line!(), func!(), &encoding);
+        show!(file!(), line!(), func!(), &data_slice);
         let response = get_encoded_account(&bank, pubkey, encoding, data_slice, None)?;
-        //show!(file!(), line!(), encoding, response, data_slice);
-        show!(file!(), line!(), new_response(&bank, &response));
+        show!(file!(), line!(), func!(), &response);
+        show!(file!(), line!(), func!(), new_response(&bank, &response));
         
-        //show!(file!(), line!(), bank.);
+        //show!(file!(), line!(), func!(), bank.);
         Ok(new_response(&bank, response))
     }
 
@@ -1562,6 +1563,7 @@ impl JsonRpcRequestProcessor {
         let encoding = config.encoding.unwrap_or(UiTransactionEncoding::Json);
         let max_supported_transaction_version = config.max_supported_transaction_version;
         let commitment = config.commitment.unwrap_or_default();
+        show!(file!(),line!(),func!(), commitment, encoding, max_supported_transaction_version, config);
         check_is_at_least_confirmed(commitment)?;
 
         if self.config.enable_rpc_transaction_history {
@@ -1578,7 +1580,7 @@ impl JsonRpcRequestProcessor {
                 |confirmed_tx_with_meta: ConfirmedTransactionWithStatusMeta| -> Result<EncodedConfirmedTransactionWithStatusMeta> {
                     Ok(confirmed_tx_with_meta.encode(encoding, max_supported_transaction_version).map_err(RpcCustomError::from)?)
                 };
-
+            show!(file!(),line!(),func!(),  confirmed_transaction);
             match confirmed_transaction.unwrap_or(None) {
                 Some(mut confirmed_transaction) => {
                     if commitment.is_confirmed()
@@ -2361,13 +2363,16 @@ fn get_encoded_account(
     // only used for simulation results
     overwrite_accounts: Option<&HashMap<Pubkey, AccountSharedData>>,
 ) -> Result<Option<UiAccount>> {
+    show!(file!(),line!(),func!(), account_resolver::get_account_from_overwrites_or_bank(pubkey, bank, overwrite_accounts) );
     match account_resolver::get_account_from_overwrites_or_bank(pubkey, bank, overwrite_accounts) {
         Some(account) => {
             let response = if is_known_spl_token_id(account.owner())
                 && encoding == UiAccountEncoding::JsonParsed
             {
+                show!(file!(),line!(),func!(), "is_known_spl_token_id = Yes");
                 get_parsed_token_account(bank, pubkey, account, overwrite_accounts)
             } else {
+                show!(file!(),line!(),func!(), "is_known_spl_token_id = No");
                 encode_account(&account, pubkey, encoding, data_slice)?
             };
             Ok(Some(response))
@@ -3112,7 +3117,7 @@ pub mod rpc_accounts {
             debug!("get_account_info rpc request received: {:?}", pubkey_str);
             
             let pubkey = verify_pubkey(&pubkey_str)?;
-            show!(file!(), line!(), pubkey);
+            show!(file!(), line!(), func!(), pubkey);
             meta.get_account_info(&pubkey, config)
         }
 
@@ -3965,7 +3970,7 @@ pub mod rpc_full {
             config: Option<RpcEncodingConfigWrapper<RpcBlockConfig>>,
         ) -> BoxFuture<Result<Option<UiConfirmedBlock>>> {
             debug!("get_block rpc request received: {:?}", slot);
-            show!(file!(), line!(), slot, config);
+            show!(file!(), line!(), func!(), slot, config);
             Box::pin(async move { meta.get_block(slot, config).await })
         }
 
@@ -4021,9 +4026,11 @@ pub mod rpc_full {
         ) -> BoxFuture<Result<Option<EncodedConfirmedTransactionWithStatusMeta>>> {
             debug!("get_transaction rpc request received: {:?}", signature_str);
             let signature = verify_signature(&signature_str);
+            
             if let Err(err) = signature {
                 return Box::pin(future::err(err));
             }
+            show!(file!(),line!(),func!(), &signature, config);
             Box::pin(async move { meta.get_transaction(signature.unwrap(), config).await })
         }
 
@@ -7102,7 +7109,7 @@ pub mod tests {
     #[test]
     fn test_rpc_verify_filter() {
         let filter = RpcFilterType::Memcmp(Memcmp::new(
-            0,                                                                                      // offset
+            0,  // offset
             MemcmpEncodedBytes::Base58("13LeFbG6m2EP1fqCj9k66fcXsoTHMMtgr7c78AivUrYD".to_string()), // encoded bytes
         ));
         assert_eq!(verify_filter(&filter), Ok(()));
