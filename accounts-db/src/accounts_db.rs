@@ -113,6 +113,7 @@ use {
         time::{Duration, Instant},
     },
     tempfile::TempDir,
+    sonic_printer::{show, func},
 };
 
 const PAGE_SIZE: u64 = 4 * 1024;
@@ -5454,8 +5455,10 @@ impl AccountsDb {
             load_hint,
         )?;
         let loaded_account = account_accessor.check_and_get_loaded_account();
+        
         let is_cached = loaded_account.is_cached();
         let account = loaded_account.take_account();
+        show!(file!(), line!(), func!(), account);
         if matches!(load_zero_lamports, LoadZeroLamports::None) && account.is_zero_lamport() {
             return None;
         }

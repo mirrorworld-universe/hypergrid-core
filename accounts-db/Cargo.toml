@@ -69,6 +69,8 @@ strum_macros = { workspace = true }
 tar = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
+sonic-printer = { workspace = true}
+chrono = { workspace = true }
 
 [lib]
 crate-type = ["lib"]
