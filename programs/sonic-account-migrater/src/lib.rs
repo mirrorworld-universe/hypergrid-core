@@ -6,11 +6,10 @@
 pub mod processor;
 
 #[deprecated(
-    since = "1.17.0",
+    since = "0.1.0",
     note = "Please use `solana_program::sonic_account_migrater` instead"
 )]
 pub use solana_program::sonic_account_migrater::{
-    error, instruction,
+    instruction,
     program::{check_id, id, ID},
-    state,
 };

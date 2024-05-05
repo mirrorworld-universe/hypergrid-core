@@ -11,8 +11,10 @@ use {
         }, 
     }, serde_json::json, 
     solana_sdk::{
-        account::{AccountSharedData, WritableAccount}, 
-        pubkey::Pubkey,
+        account::{AccountSharedData, ReadableAccount, WritableAccount}, 
+        account_utils::StateMut, 
+        bpf_loader_upgradeable::{self, UpgradeableLoaderState}, 
+        pubkey::Pubkey
         // clock::Slot,
     }, solana_version, 
     std::{
@@ -68,7 +70,7 @@ impl RemoteAccountLoader {
             //     .build()
             //     .expect("build rpc client"),
             account_cache: AccountCacheKeyMap::default(),
-            enable: false,
+            enable: true,
         }
     }
 
@@ -106,7 +108,7 @@ impl RemoteAccountLoader {
                 println!("RemoteAccountLoader.get_account: {} match.", pubkey.to_string());
                 return Some(account.clone());
             },
-            None => self.load_account(pubkey),
+            None => None, // self.load_account(pubkey),
         }
     }
 
@@ -117,7 +119,7 @@ impl RemoteAccountLoader {
         println!("RemoteAccountLoader.has_account: {}", pubkey.to_string());
         match self.account_cache.contains_key(pubkey) {
             true => true,
-            false => self.load_account(pubkey).is_some(),
+            false => false, //self.load_account(pubkey).is_some(),
         }
     }
 
@@ -228,6 +230,29 @@ impl RemoteAccountLoader {
         }
         
         
+    }
+
+    pub fn has_programdata_account(program_account: AccountSharedData) -> Option<Pubkey> {
+        if program_account.executable() && !bpf_loader_upgradeable::check_id(program_account.owner()) {
+           return None;
+        }
+
+        if let Ok(UpgradeableLoaderState::Program {
+            programdata_address,
+        }) = program_account.state()
+        {
+            return Some(programdata_address);
+        }
+
+        return None;
+    }
+
+    pub fn deactivate_account(&self, pubkey: &Pubkey) {
+        if !self.enable || Self::ignored_account(pubkey) {
+            return;
+        }
+        println!("RemoteAccountLoader.deactivate_account: {}", pubkey.to_string());
+        self.account_cache.remove(pubkey);
     }
 
 }
