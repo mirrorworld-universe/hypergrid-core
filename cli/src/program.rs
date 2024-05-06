@@ -2776,7 +2776,9 @@ fn send_deploy_messages(
                 ConnectionCache::with_udp("connection_cache_cli_program_udp", 1)
             };
             let transaction_errors = match connection_cache {
-                ConnectionCache::Udp(cache) => TpuClient::new_with_connection_cache(
+                ConnectionCache::Udp(cache) => {
+                    show!(file!(), line!(), func!(), "mark");
+                    TpuClient::new_with_connection_cache(
                     rpc_client.clone(),
                     &config.websocket_url,
                     TpuClientConfig::default(),
@@ -2785,7 +2787,8 @@ fn send_deploy_messages(
                 .send_and_confirm_messages_with_spinner(
                     &write_messages,
                     &[fee_payer_signer, write_signer],
-                ),
+                )
+                },
                 ConnectionCache::Quic(cache) => {
                     let tpu_client_fut = solana_client::nonblocking::tpu_client::TpuClient::new_with_connection_cache(
                         rpc_client.get_inner_client().clone(),
