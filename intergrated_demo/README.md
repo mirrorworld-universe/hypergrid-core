@@ -1,5 +1,6 @@
-<p align="center"><a href="https://worldstore.mirrorworld.fun/" target="_blank"><img alt="Sonic - The First SVM Gaming Chain powered by HyperGrid" title="Sonic - The First SVM Gaming Chain powered by HyperGrid" src="https://pbs.twimg.com/media/GMZ287_XgAARYEU?format=jpg&name=medium" width="100%">
-</a>
+<p align="center">
+  <a href="https://worldstore.mirrorworld.fun/" target="_blank"><img alt="Sonic - The First SVM Gaming Chain powered by HyperGrid" title="Sonic - The First SVM Gaming Chain powered by HyperGrid" src="https://pbs.twimg.com/media/GMZ287_XgAARYEU?format=jpg&name=medium" width="100%">
+  </a>
 </p>
 
 [![Live on Mainnet](https://img.shields.io/badge/Era%20Explorer-Live%20on%20Mainnet-blue)](https://explorer.zksync.io)
