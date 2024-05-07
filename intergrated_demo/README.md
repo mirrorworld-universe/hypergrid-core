@@ -22,9 +22,10 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 # Project Test Report
 
-| 测试ID | 测试类别 | 描述 | 预期结果 | 实际结果 | 状态 | 备注 |
-|--------|----------|------|----------|----------|------|------|
-| T01    | 性能测试 | 测试每秒交易处理量 | 每秒处理1000笔交易 | 每秒处理1200笔交易 | 通过 | 性能优于预期 |
-| T02    | 安全性测试 | 智能合约漏洞扫描 | 无高风险漏洞 | 发现1个中风险漏洞 | 需修复 | 中风险漏洞需进一步分析 |
-| T03    | 兼容性测试 | 跨链交易测试 | 交易无延迟成功执行 | 交易延迟5秒执行 | 警告 | 交易延迟需优化 |
-| T04    | 用户体验测试 | 交易界面测试 | 界面清晰易操作 | 用户反馈界面复杂 | 待优化 | 需简化界面设计 |
+| Test ID | Test Category | Description            | Expected Result        | Actual Result          | Status   | Remarks              |
+|---------|---------------|------------------------|------------------------|------------------------|----------|----------------------|
+| T01     | Performance Testing | Test transactions per second | Process 1000 transactions per second | Process 1200 transactions per second | Pass     | Performance better than expected |
+| T02     | Security Testing | Smart contract vulnerability scan | No high-risk vulnerabilities | Found 1 medium-risk vulnerability | Needs Fix | Further analysis needed for medium risk |
+| T03     | Compatibility Testing | Cross-chain transaction test | Transactions execute without delay | Transactions delayed by 5 seconds | Warning  | Transaction delay needs optimization |
+| T04     | User Experience Testing | Transaction interface test | Interface is clear and easy to operate | User feedback indicates complex interface | Needs Optimization | Interface design needs simplification |
+
