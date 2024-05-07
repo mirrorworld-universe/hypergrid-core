@@ -48,32 +48,5 @@ A comprehensive demonstration that showcases the ability to read and write data 
     </tbody>
 </table>
 
-<table border="2" >
-	<tr>
-		<th colspan="2" align="center">markdown表格</th>
-		<th colspan="2" >html表格</th>
-	</tr>
-	<tr>
-		<td width="10%" rowspan="4">语法</td>
-		<td width="40%" align=left>标题->连字符(---)</td>
-		<td  width="10%" rowspan="4" bgcolor=#FAEBD7>语法</td>
-		<td align=right bgcolor=#FFB6C1>表格-><font color=red>table</font>标签</td>
-	</tr>
-	<tr>
-		<td align=left>分隔每列->管道(|)</td>
-		<td align=right bgcolor=#D8BFD8>标题-><font color=red>th</font>标签</td>
-	</tr>
-	<tr>
-		<td align=left>对齐->冒号(:)</td>
-		<td align=right bgcolor=#B0C4DE>行-><font color=red>tr</font>标签</td>
-	</tr>
-	<tr>
-		<td align =left>强调->反引号(`)</td>
-		<td align=right bgcolor=#AFEEEE>列-><font color=red>td</font>标签</td>
-	</tr>
-</table>
 
-![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=johnnymail&show_icons=true&theme=radical)
-
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=johnnymail&hide_progress=true)
 
