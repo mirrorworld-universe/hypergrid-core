@@ -22,7 +22,7 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 # Project Test Report
 
-<table border="1" style="width: 100%;
+<table style="width: 100%;
         border-collapse: collapse;
         border: 2px solid black;
         border-radius: 15px;
