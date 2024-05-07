@@ -24,7 +24,7 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 <table>
     <thead>
-        <tr>
+        <tr bgcolor=#FFB6C1>
             <th>Test ID</th>
             <th>Test Category</th>
             <th>Description</th>
