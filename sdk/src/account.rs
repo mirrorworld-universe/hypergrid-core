@@ -321,6 +321,7 @@ impl ReadableAccount for AccountSharedData {
     fn rent_epoch(&self) -> Epoch {
         self.rent_epoch
     }
+   
     fn to_account_shared_data(&self) -> AccountSharedData {
         // avoid data copy here
         self.clone()
