@@ -1,4 +1,4 @@
-<p align="center"><a href="https://zksync.io" target="_blank"><img alt="zkSync Era zkEVM is Ethereum’s most user-centric ZK-rollup" title="zkSync Era zkEVM is Ethereum’s most user-centric ZK-rollup" src="https://raw.githubusercontent.com/matter-labs/.github/main/header-image.png" width="100%">
+<p align="center"><a href="https://worldstore.mirrorworld.fun/" target="_blank"><img alt="Sonic - The First SVM Gaming Chain powered by HyperGrid" title="Sonic - The First SVM Gaming Chain powered by HyperGrid" src="https://pbs.twimg.com/media/GJzIlDvXsAAO1BA?format=jpg&name=large" width="100%">
 </a>
 </p>
 
