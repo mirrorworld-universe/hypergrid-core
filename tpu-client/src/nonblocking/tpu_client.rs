@@ -46,6 +46,7 @@ use {
         task::JoinHandle,
         time::{sleep, timeout, Duration, Instant},
     },
+    sonic_printer::{func, show},
 };
 #[cfg(feature = "spinner")]
 use {
@@ -510,11 +511,13 @@ where
         config: TpuClientConfig,
         connection_cache: Arc<ConnectionCache<P, M, C>>,
     ) -> Result<Self> {
+        show!(file!(), line!(), func!(), "mark");
         let exit = Arc::new(AtomicBool::new(false));
+        show!(file!(), line!(), func!(), "mark");
         let leader_tpu_service =
             LeaderTpuService::new(rpc_client.clone(), websocket_url, M::PROTOCOL, exit.clone())
                 .await?;
-
+        show!(file!(), line!(), func!(), "mark");
         Ok(Self {
             fanout_slots: config.fanout_slots.clamp(1, MAX_FANOUT_SLOTS),
             leader_tpu_service,
@@ -699,15 +702,17 @@ impl LeaderTpuService {
         protocol: Protocol,
         exit: Arc<AtomicBool>,
     ) -> Result<Self> {
+        show!(file!(), line!(), func!(), "mark");
         let start_slot = rpc_client
             .get_slot_with_commitment(CommitmentConfig::processed())
             .await?;
-
+        show!(file!(), line!(), func!(), "mark");
         let recent_slots = RecentLeaderSlots::new(start_slot);
         let slots_in_epoch = rpc_client.get_epoch_info().await?.slots_in_epoch;
         let leaders = rpc_client
             .get_slot_leaders(start_slot, LeaderTpuCache::fanout(slots_in_epoch))
             .await?;
+        show!(file!(), line!(), func!(), "mark");
         let cluster_nodes = rpc_client.get_cluster_nodes().await?;
         let leader_tpu_cache = Arc::new(RwLock::new(LeaderTpuCache::new(
             start_slot,
@@ -716,13 +721,13 @@ impl LeaderTpuService {
             cluster_nodes,
             protocol,
         )));
-
+        show!(file!(), line!(), func!(), "mark");
         let pubsub_client = if !websocket_url.is_empty() {
             Some(PubsubClient::new(websocket_url).await?)
         } else {
             None
         };
-
+        show!(file!(), line!(), func!(), "mark");
         let t_leader_tpu_service = Some({
             let recent_slots = recent_slots.clone();
             let leader_tpu_cache = leader_tpu_cache.clone();
@@ -734,7 +739,7 @@ impl LeaderTpuService {
                 exit,
             ))
         });
-
+        show!(file!(), line!(), func!(), "mark");
         Ok(LeaderTpuService {
             recent_slots,
             leader_tpu_cache,

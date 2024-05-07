@@ -15,6 +15,7 @@ use {
     },
     solana_tpu_client::nonblocking::tpu_client::{Result, TpuClient as BackendTpuClient},
     std::sync::Arc,
+    sonic_printer::{func, show},
 };
 
 /// Client which sends transactions directly to the current leader's TPU port over UDP.
@@ -110,6 +111,7 @@ where
         config: TpuClientConfig,
         connection_cache: Arc<BackendConnectionCache<P, M, C>>,
     ) -> Result<Self> {
+        show!(file!(), line!(), func!(), websocket_url,config);
         Ok(Self {
             tpu_client: BackendTpuClient::new_with_connection_cache(
                 rpc_client,

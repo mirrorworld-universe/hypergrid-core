@@ -29,6 +29,7 @@ use {
         time::Duration,
     },
     tokio::{sync::RwLock, task::JoinHandle, time::Instant},
+    sonic_printer::{func, show},
 };
 
 const BLOCKHASH_REFRESH_RATE: Duration = Duration::from_secs(5);
@@ -64,6 +65,7 @@ pub fn send_and_confirm_transactions_in_parallel_blocking<T: Signers + ?Sized>(
     signers: &T,
     config: SendAndConfirmConfig,
 ) -> Result<Vec<Option<TransactionError>>> {
+    show!(file!(), line!(), func!(), "mark");
     let fut = send_and_confirm_transactions_in_parallel(
         rpc_client.get_inner_client().clone(),
         tpu_client,
@@ -71,6 +73,7 @@ pub fn send_and_confirm_transactions_in_parallel_blocking<T: Signers + ?Sized>(
         signers,
         config,
     );
+    show!(file!(), line!(), func!(), "mark");
     tokio::task::block_in_place(|| rpc_client.runtime().block_on(fut))
 }
 
@@ -404,14 +407,16 @@ pub async fn send_and_confirm_transactions_in_parallel<T: Signers + ?Sized>(
     config: SendAndConfirmConfig,
 ) -> Result<Vec<Option<TransactionError>>> {
     // get current blockhash and corresponding last valid block height
+    show!(file!(), line!(), func!(), "mark");
     let (blockhash, last_valid_block_height) = rpc_client
         .get_latest_blockhash_with_commitment(rpc_client.commitment())
         .await?;
+    show!(file!(), line!(), func!(), "mark");
     let blockhash_data_rw = Arc::new(RwLock::new(BlockHashData {
         blockhash,
         last_valid_block_height,
     }));
-
+    show!(file!(), line!(), func!(), "mark");
     // check if all the messages are signable by the signers
     messages
         .iter()
@@ -420,14 +425,18 @@ pub async fn send_and_confirm_transactions_in_parallel<T: Signers + ?Sized>(
             transaction.try_sign(signers, blockhash)
         })
         .collect::<std::result::Result<Vec<()>, SignerError>>()?;
-
+    show!(file!(), line!(), func!(), "mark");
     // get current block height
     let block_height = rpc_client.get_block_height().await?;
+    show!(file!(), line!(), func!(), "mark");
     let current_block_height = Arc::new(AtomicU64::new(block_height));
-
+    show!(file!(), line!(), func!(), "mark");     
     let progress_bar = config.with_spinner.then(|| {
+        show!(file!(), line!(), func!(), "mark");
         let progress_bar = spinner::new_progress_bar();
+        show!(file!(), line!(), func!(), "mark");
         progress_bar.set_message("Setting up...");
+        show!(file!(), line!(), func!(), "mark");
         progress_bar
     });
 

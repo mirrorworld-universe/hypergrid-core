@@ -2364,17 +2364,21 @@ fn get_encoded_account(
     overwrite_accounts: Option<&HashMap<Pubkey, AccountSharedData>>,
 ) -> Result<Option<UiAccount>> {
     show!(file!(),line!(),func!(), account_resolver::get_account_from_overwrites_or_bank(pubkey, bank, overwrite_accounts) );
+    // show!(file!(),line!(),func!(), account_resolver::get_account_from_remote(pubkey, overwrite_accounts) );
     match account_resolver::get_account_from_overwrites_or_bank(pubkey, bank, overwrite_accounts) {
         Some(account) => {
-            let response = if is_known_spl_token_id(account.owner())
+            show!(file!(),line!(),func!(), account.remote);
+            let mut response = if is_known_spl_token_id(account.owner())
                 && encoding == UiAccountEncoding::JsonParsed
             {
                 show!(file!(),line!(),func!(), "is_known_spl_token_id = Yes");
-                get_parsed_token_account(bank, pubkey, account, overwrite_accounts)
+                get_parsed_token_account(bank, pubkey, account.clone(), overwrite_accounts)
             } else {
                 show!(file!(),line!(),func!(), "is_known_spl_token_id = No");
                 encode_account(&account, pubkey, encoding, data_slice)?
             };
+            response.remote = account.remote;
+            show!(file!(), line!(),func!(), response);
             Ok(Some(response))
         }
         None => Ok(None),

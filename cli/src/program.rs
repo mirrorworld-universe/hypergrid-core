@@ -607,9 +607,10 @@ pub fn parse_program_subcommand(
         .map(|m| m.is_present("skip_fee_check"))
         .unwrap_or(false);
     let skip_fee_check = matches_skip_fee_check || sub_matches_skip_fee_check;
-
+    show!(file!(), line!(), func!(), "mark");
     let response = match (subcommand, sub_matches) {
         ("deploy", Some(matches)) => {
+            show!(file!(), line!(), func!(), "mark");
             let (fee_payer, fee_payer_pubkey) =
                 signer_of(matches, FEE_PAYER_ARG.name, wallet_manager)?;
 
@@ -928,6 +929,7 @@ pub fn parse_program_subcommand(
         }
         _ => unreachable!(),
     };
+    show!(file!(), line!(), func!(), response);
     Ok(response)
 }
 
@@ -2714,7 +2716,8 @@ fn send_deploy_messages(
     final_signers: Option<&[&dyn Signer]>,
     max_sign_attempts: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    show!(file!(), line!(), func!(), initial_message );
+    //show!(file!(), line!(), func!(), initial_message );
+    show!(file!(), line!(), func!(), "mark");
     if let Some(message) = initial_message {
         if let Some(initial_signer) = initial_signer {
             trace!("Preparing the required accounts");
@@ -2743,11 +2746,11 @@ fn send_deploy_messages(
             return Err("Buffer account not created yet, must provide a key pair".into());
         }
     }
-    show!(file!(), line!(), func!(), write_messages );
+    show!(file!(), line!(), func!(), "mark" );
     if !write_messages.is_empty() {
         if let Some(write_signer) = write_signer {
             trace!("Writing program data");
-
+            show!(file!(), line!(), func!(), "mark" );
             // Simulate the first write message to get the number of compute units
             // consumed and then reuse that value as the compute unit limit for all
             // write messages.
@@ -2769,12 +2772,13 @@ fn send_deploy_messages(
                     }
                 }
             }
-
+            show!(file!(), line!(), func!(), "mark" );
             let connection_cache = if config.use_quic {
                 ConnectionCache::new_quic("connection_cache_cli_program_quic", 1)
             } else {
                 ConnectionCache::with_udp("connection_cache_cli_program_udp", 1)
             };
+            show!(file!(), line!(), func!(), "mark" );
             let transaction_errors = match connection_cache {
                 ConnectionCache::Udp(cache) => {
                     show!(file!(), line!(), func!(), "mark");
@@ -2790,12 +2794,14 @@ fn send_deploy_messages(
                 )
                 },
                 ConnectionCache::Quic(cache) => {
+                    show!(file!(), line!(), func!(), "mark" );
                     let tpu_client_fut = solana_client::nonblocking::tpu_client::TpuClient::new_with_connection_cache(
                         rpc_client.get_inner_client().clone(),
                         config.websocket_url.as_str(),
                         solana_client::tpu_client::TpuClientConfig::default(),
                         cache,
                     );
+                    show!(file!(), line!(), func!(), "mark" );
                     let tpu_client = rpc_client
                         .runtime()
                         .block_on(tpu_client_fut)
@@ -2818,7 +2824,7 @@ fn send_deploy_messages(
             .into_iter()
             .flatten()
             .collect::<Vec<_>>();
-
+            show!(file!(), line!(), func!(), "mark" );
             if !transaction_errors.is_empty() {
                 for transaction_error in &transaction_errors {
                     error!("{:?}", transaction_error);

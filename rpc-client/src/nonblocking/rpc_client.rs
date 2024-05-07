@@ -5386,7 +5386,8 @@ impl RpcClient {
             .await
             .map_err(|err| err.into_with_request(request))?;
         
-        show!(file!(), line!(), func!(), response);
+        //show!(file!(), line!(), func!(), response);
+        show!(file!(), line!(), func!(), "mark");
         serde_json::from_value(response)
                     .map_err(|err| ClientError::new_with_request(err.into(), request))
    
