@@ -22,54 +22,77 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 # Project Test Report
 
-<table border="1" style="border-collapse: collapse; width: 100%;">
-    <thead>
-        <tr>
-            <th>Test ID</th>
-            <th>Test Category</th>
-            <th>Description</th>
-            <th>Expected Result</th>
-            <th>Actual Result</th>
-            <th>Status</th>
-            <th>Remarks</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>T01</td>
-            <td>Performance Test</td>
-            <td>Test transactions per second</td>
-            <td>1000 transactions per second</td>
-            <td>1200 transactions per second</td>
-            <td>Pass</td>
-            <td>Performance better than expected</td>
-        </tr>
-        <tr>
-            <td>T02</td>
-            <td>Security Test</td>
-            <td>Smart contract vulnerability scan</td>
-            <td>No high-risk vulnerabilities</td>
-            <td>Found 1 medium-risk vulnerability</td>
-            <td>Needs Fix</td>
-            <td>Medium risk vulnerability needs further analysis</td>
-        </tr>
-        <tr>
-            <td>T03</td>
-            <td>Compatibility Test</td>
-            <td>Cross-chain transaction test</td>
-            <td>Transactions executed without delay</td>
-            <td>Transaction executed with a 5-second delay</td>
-            <td>Warning</td>
-            <td>Transaction delay needs optimization</td>
-        </tr>
-        <tr>
-            <td>T04</td>
-            <td>User Experience Test</td>
-            <td>Transaction interface test</td>
-            <td>Interface clear and easy to operate</td>
-            <td>User feedback indicates interface is complex</td>
-            <td>Needs Optimization</td>
-            <td>Need to simplify interface design</td>
-        </tr>
-    </tbody>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Layer 2 Testing Data</title>
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 2px solid black;
+        border-radius: 15px;
+        overflow: hidden; /* Ensures the border radius is applied */
+    }
+    th, td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
+</head>
+<body>
+<table>
+    <tr>
+        <th>Test ID</th>
+        <th>Test Category</th>
+        <th>Description</th>
+        <th>Expected Result</th>
+        <th>Actual Result</th>
+        <th>Status</th>
+        <th>Remarks</th>
+    </tr>
+    <tr>
+        <td>T01</td>
+        <td>Performance Test</td>
+        <td>Test transactions per second</td>
+        <td>1000 transactions per second</td>
+        <td>1200 transactions per second</td>
+        <td>Pass</td>
+        <td>Performance better than expected</td>
+    </tr>
+    <tr>
+        <td>T02</td>
+        <td>Security Test</td>
+        <td>Smart contract vulnerability scan</td>
+        <td>No high-risk vulnerabilities</td>
+        <td>1 medium-risk vulnerability found</td>
+        <td>Needs Fix</td>
+        <td>Further analysis needed for medium-risk vulnerability</td>
+    </tr>
+    <tr>
+        <td>T03</td>
+        <td>Compatibility Test</td>
+        <td>Cross-chain transaction test</td>
+        <td>Transaction executed without delay</td>
+        <td>Transaction executed with 5 seconds delay</td>
+        <td>Warning</td>
+        <td>Transaction delay needs optimization</td>
+    </tr>
+    <tr>
+        <td>T04</td>
+        <td>User Experience Test</td>
+        <td>Interface usability testing</td>
+        <td>Interface clear and easy to use</td>
+        <td>User feedback indicates complex interface</td>
+        <td>To be Optimized</td>
+        <td>Interface design needs simplification</td>
+    </tr>
 </table>
+</body>
+</html>
+
