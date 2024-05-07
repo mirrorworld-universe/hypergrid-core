@@ -73,4 +73,4 @@ A comprehensive demonstration that showcases the ability to read and write data 
 </table>
 
 
-[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=johnnymail0002@gmail.com)](https://github.com/anuraghazra/github-readme-stats)
+[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=johnnymail)](https://github.com/anuraghazra/github-readme-stats)
