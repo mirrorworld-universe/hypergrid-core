@@ -22,13 +22,9 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 # Project Test Report
 
-<table style="width: 100%;
-        border-collapse: collapse;
-        border: 2px solid black;
-        border-radius: 15px;
-        overflow: hidden;">
+<table>
     <thead>
-        <tr style="background-color: #f2f2f2;">
+        <tr>
             <th>Test ID</th>
             <th>Test Category</th>
             <th>Description</th>
@@ -47,33 +43,6 @@ A comprehensive demonstration that showcases the ability to read and write data 
             <td>1200 transactions per second</td>
             <td>Pass</td>
             <td>Performance better than expected</td>
-        </tr>
-        <tr>
-            <td>T02</td>
-            <td>Security Test</td>
-            <td>Smart contract vulnerability scan</td>
-            <td>No high-risk vulnerabilities</td>
-            <td>Found 1 medium-risk vulnerability</td>
-            <td>Needs Fix</td>
-            <td>Medium risk vulnerability needs further analysis</td>
-        </tr>
-        <tr>
-            <td>T03</td>
-            <td>Compatibility Test</td>
-            <td>Cross-chain transaction test</td>
-            <td>Transactions executed without delay</td>
-            <td>Transaction executed with a 5-second delay</td>
-            <td>Warning</td>
-            <td>Transaction delay needs optimization</td>
-        </tr>
-        <tr>
-            <td>T04</td>
-            <td>User Experience Test</td>
-            <td>Transaction interface test</td>
-            <td>Interface clear and easy to operate</td>
-            <td>User feedback indicates interface is complex</td>
-            <td>Needs Optimization</td>
-            <td>Need to simplify interface design</td>
         </tr>
     </tbody>
 </table>
