@@ -26,7 +26,8 @@ A comprehensive demonstration that showcases the ability to read and write data 
         border-collapse: collapse;
         border: 2px solid black;
         border-radius: 15px;
-        overflow: hidden;">
+        overflow: hidden;
+  color:red;">
     <thead>
         <tr style="background-color: #f2f2f2;">
             <th>Test ID</th>
