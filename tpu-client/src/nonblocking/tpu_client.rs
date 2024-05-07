@@ -371,7 +371,10 @@ where
     M: ConnectionManager<ConnectionPool = P, NewConnectionConfig = C>,
     C: NewConnectionConfig,
 {
+    // Yusuf: I think this is the function that sends the transactions to the leader TPU
+    show!(file!(), line!(), func!(), addr);
     let conn = connection_cache.get_nonblocking_connection(addr);
+
     conn.send_data_batch(wire_transactions).await
 }
 
@@ -456,6 +459,8 @@ where
         let leaders = self
             .leader_tpu_service
             .leader_tpu_sockets(self.fanout_slots);
+        show!(file!(), line!(), func!(), leaders);
+
         let futures = leaders
             .iter()
             .map(|addr| {
@@ -466,6 +471,7 @@ where
                 )
             })
             .collect::<Vec<_>>();
+        show!(file!(), line!(), func!(), futures.len());
         let results: Vec<TransportResult<()>> = join_all(futures).await;
 
         let mut last_error: Option<TransportError> = None;
@@ -708,7 +714,9 @@ impl LeaderTpuService {
             .await?;
         show!(file!(), line!(), func!(), "mark");
         let recent_slots = RecentLeaderSlots::new(start_slot);
+        show!(file!(), line!(), func!(), "mark");
         let slots_in_epoch = rpc_client.get_epoch_info().await?.slots_in_epoch;
+        show!(file!(), line!(), func!(), start_slot, slots_in_epoch);
         let leaders = rpc_client
             .get_slot_leaders(start_slot, LeaderTpuCache::fanout(slots_in_epoch))
             .await?;

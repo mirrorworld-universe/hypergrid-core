@@ -4,18 +4,19 @@ pub mod show {
     #[macro_export]
     macro_rules! show {
         ($file:expr, $line:expr, $func:expr, $($args: expr),*) => {
-            // $(
-            //     let s = $func.to_string();
-            //     let names: Vec<&str> = s.split("::").collect();
-            //     let fname = if names.len() >= 3 {
-            //         names[names.len()-3]
-            //     }
-            //     else{
-            //         "__"
-            //     };
+            //std::thread::sleep(std::time::Duration::from_millis(100));
+            $(
+                let s = $func.to_string();
+                let names: Vec<&str> = s.split("::").collect();
+                let fname = if names.len() >= 3 {
+                    names[names.len()-3]
+                }
+                else{
+                    "__"
+                };
                 
-            //     print!("[{}] {}:{}:\n{}():\n{:?}\n\n", chrono::prelude::Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string(), $file.to_string(), $line, fname, $args);
-            // )*
+                print!("[{}] {}:{}:\n{}():\n{:?}\n\n", chrono::prelude::Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string(), $file.to_string(), $line, fname, $args);
+            )*
         }
     }
 }

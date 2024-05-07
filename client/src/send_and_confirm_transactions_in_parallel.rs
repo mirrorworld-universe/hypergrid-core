@@ -34,7 +34,7 @@ use {
 
 const BLOCKHASH_REFRESH_RATE: Duration = Duration::from_secs(5);
 const TPU_RESEND_REFRESH_RATE: Duration = Duration::from_secs(2);
-const SEND_INTERVAL: Duration = Duration::from_millis(10);
+const SEND_INTERVAL: Duration = Duration::from_millis(50);
 type QuicTpuClient = TpuClient<QuicPool, QuicConnectionManager, QuicConfig>;
 
 #[derive(Clone, Debug)]
@@ -309,6 +309,7 @@ async fn confirm_transactions_till_block_height_and_resend_unexpired_transaction
     tpu_client: &Option<QuicTpuClient>,
     context: &SendingContext,
 ) {
+    show!(file!(), line!(), func!(), "mark");
     let unconfirmed_transaction_map = context.unconfirmed_transaction_map.clone();
     let current_block_height = context.current_block_height.clone();
 
@@ -317,9 +318,10 @@ async fn confirm_transactions_till_block_height_and_resend_unexpired_transaction
         .iter()
         .map(|x| x.last_valid_block_height)
         .max();
-
+    show!(file!(), line!(), func!(), "mark");
     if let Some(mut max_valid_block_height) = max_valid_block_height {
         if let Some(progress_bar) = progress_bar {
+            show!(file!(), line!(), func!(), "mark");
             let progress = progress_from_context_and_block_height(context, max_valid_block_height);
             progress.set_message_for_confirmed_transactions(
                 progress_bar,
@@ -328,8 +330,9 @@ async fn confirm_transactions_till_block_height_and_resend_unexpired_transaction
                 ),
             );
         }
-
+        show!(file!(), line!(), func!(), "mark");
         if let Some(progress_bar) = progress_bar {
+            show!(file!(), line!(), func!(), "mark");
             let progress = progress_from_context_and_block_height(context, max_valid_block_height);
             progress.set_message_for_confirmed_transactions(
                 progress_bar,
@@ -353,10 +356,13 @@ async fn confirm_transactions_till_block_height_and_resend_unexpired_transaction
                     .map(|x| x.serialized_transaction.clone())
                     .collect::<Vec<_>>();
                 let num_txs_to_resend = txs_to_resend_over_tpu.len();
+                show!(file!(), line!(), func!(), &num_txs_to_resend);
+                // show!(file!(), line!(), func!(), &txs_to_resend_over_tpu);
                 // This is a "reasonable" constant for how long it should
                 // take to fan the transactions out, taken from
                 // `solana_tpu_client::nonblocking::tpu_client::send_wire_transaction_futures`
                 const SEND_TIMEOUT_INTERVAL: Duration = Duration::from_secs(5);
+                show!(file!(), line!(), func!(), "mark");
                 let message = if tokio::time::timeout(
                     SEND_TIMEOUT_INTERVAL,
                     tpu_client.try_send_wire_transaction_batch(txs_to_resend_over_tpu),
@@ -364,31 +370,40 @@ async fn confirm_transactions_till_block_height_and_resend_unexpired_transaction
                 .await
                 .is_err()
                 {
+                    show!(file!(), line!(), func!(), "mark");
                     format!("Timed out resending {num_txs_to_resend} transactions...")
                 } else {
+                    show!(file!(), line!(), func!(), "mark");
                     format!("Resent {num_txs_to_resend} transactions...")
                 };
-
+                show!(file!(), line!(), func!(), "mark");
                 if let Some(progress_bar) = progress_bar {
                     let progress =
                         progress_from_context_and_block_height(context, max_valid_block_height);
                     progress.set_message_for_confirmed_transactions(progress_bar, &message);
                 }
-
+                show!(file!(), line!(), func!(), "mark");
                 let elapsed = instant.elapsed();
                 if elapsed < TPU_RESEND_REFRESH_RATE {
+                    show!(file!(), line!(), func!(), TPU_RESEND_REFRESH_RATE - elapsed);
                     tokio::time::sleep(TPU_RESEND_REFRESH_RATE - elapsed).await;
                 }
             } else {
+                show!(file!(), line!(), func!(), "mark");
                 tokio::time::sleep(Duration::from_millis(100)).await;
             }
+            show!(file!(), line!(), func!(), "mark");
             if let Some(max_valid_block_height_in_remaining_transaction) =
                 unconfirmed_transaction_map
                     .iter()
                     .map(|x| x.last_valid_block_height)
                     .max()
             {
+                
                 max_valid_block_height = max_valid_block_height_in_remaining_transaction;
+                show!(file!(), line!(), func!(), max_valid_block_height);
+                
+
             }
         }
     }
@@ -439,18 +454,19 @@ pub async fn send_and_confirm_transactions_in_parallel<T: Signers + ?Sized>(
         show!(file!(), line!(), func!(), "mark");
         progress_bar
     });
-
+    show!(file!(), line!(), func!(), "mark");
     // blockhash and block height update task
     let block_data_task = create_blockhash_data_updating_task(
         rpc_client.clone(),
         blockhash_data_rw.clone(),
         current_block_height.clone(),
     );
-
+    show!(file!(), line!(), func!(), "mark");
     let unconfirmed_transasction_map = Arc::new(DashMap::<Signature, TransactionData>::new());
     let error_map = Arc::new(DashMap::new());
     let num_confirmed_transactions = Arc::new(AtomicUsize::new(0));
     // tasks which confirms the transactions that were sent
+    show!(file!(), line!(), func!(), "mark");
     let transaction_confirming_task = create_transaction_confirmation_task(
         rpc_client.clone(),
         current_block_height.clone(),
@@ -458,11 +474,14 @@ pub async fn send_and_confirm_transactions_in_parallel<T: Signers + ?Sized>(
         error_map.clone(),
         num_confirmed_transactions.clone(),
     );
-
+    show!(file!(), line!(), func!(), "mark");
     // transaction sender task
     let total_transactions = messages.len();
+    show!(file!(), line!(), func!(), "mark");
     let mut initial = true;
+    show!(file!(), line!(), func!(), "mark");
     let signing_count = config.resign_txs_count.unwrap_or(1);
+    show!(file!(), line!(), func!(), "mark");
     let context = SendingContext {
         unconfirmed_transaction_map: unconfirmed_transasction_map.clone(),
         blockhash_data_rw: blockhash_data_rw.clone(),
@@ -471,9 +490,10 @@ pub async fn send_and_confirm_transactions_in_parallel<T: Signers + ?Sized>(
         error_map: error_map.clone(),
         total_transactions,
     };
-
+    show!(file!(), line!(), func!(), signing_count);
     for expired_blockhash_retries in (0..signing_count).rev() {
         // only send messages which have not been confirmed
+        show!(file!(), line!(), func!(), "mark");
         let messages_with_index: Vec<(usize, Message)> = if initial {
             initial = false;
             messages.iter().cloned().enumerate().collect()
@@ -484,14 +504,15 @@ pub async fn send_and_confirm_transactions_in_parallel<T: Signers + ?Sized>(
                 .map(|x| (x.index, x.message.clone()))
                 .collect()
         };
-
+        show!(file!(), line!(), func!(), "mark");
         if messages_with_index.is_empty() {
+            show!(file!(), line!(), func!(), "mark");
             break;
         }
 
         // clear the map so that we can start resending
         unconfirmed_transasction_map.clear();
-
+        show!(file!(), line!(), func!(), "mark");
         let futures = [
             sign_all_messages_and_send(
                 &progress_bar,
@@ -505,7 +526,9 @@ pub async fn send_and_confirm_transactions_in_parallel<T: Signers + ?Sized>(
             async {
                 // Give the signing and sending a head start before trying to
                 // confirm and resend
+                show!(file!(), line!(), func!(), "mark");
                 tokio::time::sleep(TPU_RESEND_REFRESH_RATE).await;
+                show!(file!(), line!(), func!(), "mark");
                 confirm_transactions_till_block_height_and_resend_unexpired_transaction_over_tpu(
                     &progress_bar,
                     &tpu_client,
@@ -514,25 +537,29 @@ pub async fn send_and_confirm_transactions_in_parallel<T: Signers + ?Sized>(
                 .await;
                 // Infallible, but required to have the same return type as
                 // `sign_all_messages_and_send`
+                show!(file!(), line!(), func!(), "mark");
                 Ok(())
             }
             .boxed_local(),
         ];
+        show!(file!(), line!(), func!(), "mark");
         join_all(futures).await.into_iter().collect::<Result<_>>()?;
-
+        show!(file!(), line!(), func!(), "mark");
         if unconfirmed_transasction_map.is_empty() {
+            show!(file!(), line!(), func!(), "mark");
             break;
         }
-
+        show!(file!(), line!(), func!(), "mark");
         if let Some(progress_bar) = &progress_bar {
             progress_bar.println(format!(
                 "Blockhash expired. {expired_blockhash_retries} retries remaining"
             ));
         }
     }
-
+    show!(file!(), line!(), func!(), "mark");
     block_data_task.abort();
     transaction_confirming_task.abort();
+    show!(file!(), line!(), func!(), "mark");
     if unconfirmed_transasction_map.is_empty() {
         let mut transaction_errors = vec![None; messages.len()];
         for iterator in error_map.iter() {
