@@ -11,7 +11,7 @@ use {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum ProgramInstruction {
     ///Migrate remote accounts to local accounts cache
-    MigrateRemoteAccounts, // { addresses: Vec<Pubkey> },
+    MigrateRemoteAccounts,
     ///Deactivate remote accounts in local accounts cache
     DeactivateRemoteAccounts,
 }

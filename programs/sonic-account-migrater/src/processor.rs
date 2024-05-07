@@ -25,9 +25,7 @@ declare_process_instruction!(Entrypoint, DEFAULT_COMPUTE_UNITS, |invoke_context|
     let instruction_context = transaction_context.get_current_instruction_context()?;
     let instruction_data = instruction_context.get_instruction_data();
     match limited_deserialize(instruction_data)? {
-        ProgramInstruction::MigrateRemoteAccounts /*{ addresses }*/ => {
-            Processor::migrate_remote_accounts(invoke_context) //, addresses)
-        }
+        ProgramInstruction::MigrateRemoteAccounts => Processor::migrate_remote_accounts(invoke_context),
         ProgramInstruction::DeactivateRemoteAccounts => Processor::deactivate_remote_accounts(invoke_context),
     }
 });
@@ -36,7 +34,6 @@ pub struct Processor;
 impl Processor {
     fn migrate_remote_accounts(
         invoke_context: &mut InvokeContext,
-        // addresses: Vec<Pubkey>,
     ) -> Result<(), InstructionError> {
         let transaction_context = &invoke_context.transaction_context;
         let instruction_context = transaction_context.get_current_instruction_context()?;
