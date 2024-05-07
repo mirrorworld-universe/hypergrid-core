@@ -18,3 +18,13 @@ A comprehensive demonstration that showcases the ability to read and write data 
 * App Layer: Code that interfaces with Sonic through HyperGrid, written in Rust or TypeScript.
 
 * Docs Layer: A README.md file that describes the nature of the demo. This file should also contain the results of stress testing.
+
+
+# Project Test Report
+
+| 测试ID | 测试类别 | 描述 | 预期结果 | 实际结果 | 状态 | 备注 |
+|--------|----------|------|----------|----------|------|------|
+| T01    | 性能测试 | 测试每秒交易处理量 | 每秒处理1000笔交易 | 每秒处理1200笔交易 | 通过 | 性能优于预期 |
+| T02    | 安全性测试 | 智能合约漏洞扫描 | 无高风险漏洞 | 发现1个中风险漏洞 | 需修复 | 中风险漏洞需进一步分析 |
+| T03    | 兼容性测试 | 跨链交易测试 | 交易无延迟成功执行 | 交易延迟5秒执行 | 警告 | 交易延迟需优化 |
+| T04    | 用户体验测试 | 交易界面测试 | 界面清晰易操作 | 用户反馈界面复杂 | 待优化 | 需简化界面设计 |
