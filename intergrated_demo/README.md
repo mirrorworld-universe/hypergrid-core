@@ -22,10 +22,11 @@ A comprehensive demonstration that showcases the ability to read and write data 
 
 # Project Test Report
 
-| Test ID | Test Category | Description            | Expected Result        | Actual Result          | Status   | Remarks              |
-|---------|---------------|------------------------|------------------------|------------------------|----------|----------------------|
-| T01     | Performance Testing | Test transactions per second | Process 1000 transactions per second | Process 1200 transactions per second | Pass     | Performance better than expected |
-| T02     | Security Testing | Smart contract vulnerability scan | No high-risk vulnerabilities | Found 1 medium-risk vulnerability | Needs Fix | Further analysis needed for medium risk |
-| T03     | Compatibility Testing | Cross-chain transaction test | Transactions execute without delay | Transactions delayed by 5 seconds | Warning  | Transaction delay needs optimization |
-| T04     | User Experience Testing | Transaction interface test | Interface is clear and easy to operate | User feedback indicates complex interface | Needs Optimization | Interface design needs simplification |
+| Test ID | Test Category | Description               | Expected Result        | Actual Result           | Status  | Remarks               |
+|---------|---------------|---------------------------|------------------------|-------------------------|---------|-----------------------|
+| T01     | Performance Test | Test transaction throughput per second | Process 1000 transactions per second | Process 1200 transactions per second | Pass    | Performance better than expected |
+| T02     | Security Test | Smart contract vulnerability scan | No high-risk vulnerabilities | Found 1 medium-risk vulnerability | To be fixed | Further analysis required for medium-risk vulnerability |
+| T03     | Compatibility Test | Cross-chain transaction test | Transactions execute without delay | Transactions execute with a 5-second delay | Warning | Transaction delay needs optimization |
+| T04     | User Experience Test | Transaction interface test | Interface is clear and easy to operate | Users report the interface is complex | To be optimized | Interface design needs simplification |
+
 
