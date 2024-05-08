@@ -5068,7 +5068,6 @@ impl AccountsDb {
             AccountIndexGetResult::NotFound => {
                 // Sonic: check if the pubkey is from remote in cache.
                 if ancestors.len() > 1 && self.accounts_cache.has_account_from_remote(pubkey) {
-                    println!("******AccountsDb.read_index_for_accessor_or_load_slow: {}", pubkey.to_string());
                     return Some((0, StorageLocation::Cached, None)); //Sonic: return a dummy slot number
                 }
                 return None;
@@ -5458,7 +5457,6 @@ impl AccountsDb {
         
         let is_cached = loaded_account.is_cached();
         let account = loaded_account.take_account();
-        // show!(file!(), line!(), func!(), account);
         if matches!(load_zero_lamports, LoadZeroLamports::None) && account.is_zero_lamport() {
             return None;
         }

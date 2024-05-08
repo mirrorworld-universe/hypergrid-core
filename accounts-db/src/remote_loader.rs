@@ -113,10 +113,8 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return None;
         }
-        println!("RemoteAccountLoader.get_account: {}", pubkey.to_string());
         match self.account_cache.get(pubkey) {
             Some(account) =>    {
-                println!("RemoteAccountLoader.get_account: {} match.", pubkey.to_string());
                 return Some(account.clone());
             },
             None => None, // self.load_account(pubkey),
@@ -127,7 +125,6 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return false;
         }
-        println!("RemoteAccountLoader.has_account: {}", pubkey.to_string());
         match self.account_cache.contains_key(pubkey) {
             true => true,
             false => false, //self.load_account(pubkey).is_some(),
@@ -169,8 +166,7 @@ impl RemoteAccountLoader {
             _ => Vec::new(), // Add wildcard pattern to cover all other possible values
         };
     
-        println!("data: {}, {}", space, data.len());
-    
+        
         let mut account = AccountSharedData::create(
                 lamports,
                 data,
@@ -180,7 +176,6 @@ impl RemoteAccountLoader {
         );
         account.remote = true;
     
-        println!("account: {:?}", account);
         Some(account)
     }
     
@@ -194,14 +189,11 @@ impl RemoteAccountLoader {
     }
     fn load_account_from_rpc(&self, pubkey: &Pubkey) -> Option<AccountSharedData> {
         if Self::ignored_account(pubkey) {
-            print!("******* skip: {}\n", pubkey.to_string());
             return None;
         }
-        println!("load_account_from_rpc: {}", pubkey.to_string());
         let result = self.rpc_client.get_account(pubkey);
         match result {
             Ok(account) => {
-                println!("load_account_from_rpc: account: {:?}", account);
                 let mut account = AccountSharedData::create(
                     account.lamports,
                     account.data,
@@ -211,12 +203,10 @@ impl RemoteAccountLoader {
                 );
                 account.remote = true;
         
-                println!("account: {:?}", account);
                 self.account_cache.insert(pubkey.clone(), account.clone());
                 Some(account)
             },
             Err(e) => {
-                println!("load_account_from_rpc: failed to load account: {:?}\n", e);
                 None
             }
         }
@@ -224,11 +214,8 @@ impl RemoteAccountLoader {
 
     fn load_account_from_remote(&self, pubkey: &Pubkey) -> Option<AccountSharedData> {
         if Self::ignored_account(pubkey) {
-            print!("******* skip: {}\n", pubkey.to_string());
             return None;
         }
-        println!("load_account_from_remote: {}", pubkey.to_string());
-
         let req = json!({
             "jsonrpc": "2.0",
             "id": 1,
@@ -248,7 +235,6 @@ impl RemoteAccountLoader {
                 .header(CONTENT_TYPE, "application/json")
                 .body(req.to_string())
                 .send().unwrap();
-            println!("load_account_from_remote, response: {:?}", res.status());
             if res.status().is_success() {
                 let account_json: serde_json::Value = res.json().unwrap();
                 // println!("load_account_from_remote 1: {:?}", account_json);
@@ -264,7 +250,6 @@ impl RemoteAccountLoader {
                 Some(account)
             },
             None => {
-                println!("load_account_from_remote: failed to load account: {:?}\n", pubkey);
                 None
             }
         }
@@ -291,7 +276,6 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return;
         }
-        println!("RemoteAccountLoader.deactivate_account: {}", pubkey.to_string());
         self.account_cache.remove(pubkey);
     }
 
