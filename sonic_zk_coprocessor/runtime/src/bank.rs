@@ -177,6 +177,7 @@ use {
         transaction_context::{
             ExecutionRecord, TransactionAccount, TransactionContext, TransactionReturnData,
         },
+        program_utils::limited_deserialize,
     },
     solana_stake_program::stake_state::{
         self, InflationPointCalculationEvent, PointValue, StakeStateV2,
@@ -4850,6 +4851,7 @@ impl Bank {
             programs_loaded_for_tx_batch.latest_root_epoch,
         );
         let mut process_message_time = Measure::start("process_message_time");
+        //Sonic: print message
         if !tx.is_simple_vote_transaction() {
             println!("MessageProcessor::process_message {:?}", tx.message());
         }
@@ -4946,6 +4948,13 @@ impl Bank {
             None
         };
 
+        //Sonic: print message
+        if !tx.is_simple_vote_transaction() {
+            println!("Bank.execute_loaded_transaction");
+            log_messages.as_ref().map(|log_messages| {
+                println!("log_messages: {:?}", log_messages);
+            });
+        }
         TransactionExecutionResult::Executed {
             details: TransactionExecutionDetails {
                 status,
@@ -5052,6 +5061,43 @@ impl Bank {
         loaded_programs_for_txs.unwrap()
     }
 
+    ///Sonic: check remote accounts in transaction
+    fn check_remote_accounts(&self, tx: &SanitizedTransaction) {
+        if tx.is_simple_vote_transaction() {
+            return;
+        }
+        let msg = tx.message();
+        let account_keys = msg.account_keys();
+        msg.instructions().iter().for_each(|ix| {
+            if let Some(program_id) = account_keys.get(ix.program_id_index.into()) {
+                println!("Bank.check_remote_accounts(): program_id: {:?}", program_id);
+                if !sonic_account_migrater_program::check_id(program_id) { 
+                    return;
+                }
+                let instruction = limited_deserialize(&ix.data).unwrap();
+                ix.accounts.iter().for_each(|account_index| {
+                    if msg.is_signer((*account_index).into()) || *account_index == ix.program_id_index {
+                        return;
+                    }
+                    let mut accounts:Vec<Pubkey> = vec![];
+                    if let Some(account_key) = account_keys.get((*account_index).into()) {
+                        accounts.push(*account_key);
+                    }
+                    match instruction {
+                        sonic_account_migrater_program::instruction::ProgramInstruction::MigrateRemoteAccounts => {
+                            //load remote account...
+                            self.rc.accounts.accounts_db.accounts_cache.load_accounts_from_remote(accounts);
+                        },
+                        sonic_account_migrater_program::instruction::ProgramInstruction::DeactivateRemoteAccounts => {
+                            //deactivate remote account...
+                            self.rc.accounts.accounts_db.accounts_cache.deactivate_remote_accounts(accounts);
+                        },
+                    }
+                });
+            }
+        });
+    }
+
     /// Returns a hash map of executable program accounts (program accounts that are not writable
     /// in the given transactions), and their owners, for the transactions with a valid
     /// blockhash or nonce.
@@ -5074,6 +5120,7 @@ impl Bank {
                     })
                     .is_some()
                 {
+                    self.check_remote_accounts(tx); //Socnic: check remote accounts
                     tx.message()
                         .account_keys()
                         .iter()

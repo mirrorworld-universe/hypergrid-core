@@ -1,8 +1,5 @@
 use {
-    base64::{self, Engine}, 
-    dashmap::DashMap, // DashSet}, 
-    // futures::{self, future::Remote, FutureExt}, 
-    reqwest::{
+    base64::{self, Engine}, dashmap::DashMap, reqwest::{
         self,
         header::{
             self, 
@@ -10,26 +7,30 @@ use {
             // RETRY_AFTER
         }, 
     }, serde_json::json, 
+    solana_client::rpc_client::RpcClient, 
+    solana_program_runtime::solana_rbpf::program, 
     solana_sdk::{
-        account::{AccountSharedData, WritableAccount}, 
-        pubkey::Pubkey,
+        account::{AccountSharedData, ReadableAccount, WritableAccount}, 
+        account_utils::StateMut, 
+        bpf_loader_upgradeable::{self, UpgradeableLoaderState}, 
+        instruction::{AccountMeta, Instruction}, 
+        commitment_config::CommitmentConfig,
+        pubkey::Pubkey, 
+        signature::{Keypair, Signer, Signature}, 
+        transaction::Transaction
         // clock::Slot,
-    }, solana_version, 
-    std::{
-        str::FromStr, 
-        thread, 
-        time::Duration, //{Duration, Instant},
-    }, 
-    // tokio::{self, runtime}, 
-    zstd,
+    }, solana_version, std::{
+        fmt, option_env, str::FromStr, thread, time::Duration
+    }, zstd
 };
 
 type AccountCacheKeyMap = DashMap<Pubkey, AccountSharedData>;
 
-#[derive(Debug)]
+// #[derive(Debug)]
 pub struct RemoteAccountLoader {
     /// HTTP client used to send requests to the remote.
     client: reqwest::blocking::Client,
+    rpc_client: RpcClient,
     // client: reqwest::Client,
     /// URL of the remote to load accounts from.
     url: String,
@@ -39,10 +40,20 @@ pub struct RemoteAccountLoader {
     enable: bool,
 }
 
+impl fmt::Debug for RemoteAccountLoader {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("RemoteAccountLoader")
+            //.field("gzip", &self.inner.gzip)
+            //.field("redirect_policy", &self.inner.redirect_policy)
+            //.field("referer", &self.inner.referer)
+            .finish()
+    }
+}
+
 impl Default for RemoteAccountLoader {
     fn default() -> Self {
-        Self::new("http://rpc.hypergrid.dev")
-        // Self::new("https://api.devnet.solana.com/")
+        let rpc_url: Option<&'static str> = option_env!("BASE_LAYER_RPC");
+        Self::new(rpc_url.unwrap_or("http://rpc.hypergrid.dev")) //"https://api.devnet.solana.com/"))
     }
 }
 
@@ -67,8 +78,9 @@ impl RemoteAccountLoader {
             //     .pool_idle_timeout(timeout)
             //     .build()
             //     .expect("build rpc client"),
+            rpc_client: RpcClient::new_with_timeout_and_commitment(url.to_string(), Duration::from_secs(30), CommitmentConfig::confirmed()),
             account_cache: AccountCacheKeyMap::default(),
-            enable: false,
+            enable: true,
         }
     }
 
@@ -85,9 +97,10 @@ impl RemoteAccountLoader {
         default_headers
     }
 
+    /// Check if the account should be ignored.
     fn ignored_account(pubkey: &Pubkey) -> bool {
         let pk = pubkey.to_string();
-        if pk.contains("1111111111111111") 
+        if pk.contains("1111111111111111")
             // || pk.starts_with("Memo") 
             // || pk.starts_with("Token") 
             // || pk.starts_with("AToken") 
@@ -100,13 +113,11 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return None;
         }
-        println!("RemoteAccountLoader.get_account: {}", pubkey.to_string());
         match self.account_cache.get(pubkey) {
             Some(account) =>    {
-                println!("RemoteAccountLoader.get_account: {} match.", pubkey.to_string());
                 return Some(account.clone());
             },
-            None => self.load_account(pubkey),
+            None => None, // self.load_account(pubkey),
         }
     }
 
@@ -114,10 +125,9 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return false;
         }
-        println!("RemoteAccountLoader.has_account: {}", pubkey.to_string());
         match self.account_cache.contains_key(pubkey) {
             true => true,
-            false => self.load_account(pubkey).is_some(),
+            false => false, //self.load_account(pubkey).is_some(),
         }
     }
 
@@ -156,8 +166,7 @@ impl RemoteAccountLoader {
             _ => Vec::new(), // Add wildcard pattern to cover all other possible values
         };
     
-        println!("data: {}, {}", space, data.len());
-    
+        
         let mut account = AccountSharedData::create(
                 lamports,
                 data,
@@ -167,7 +176,6 @@ impl RemoteAccountLoader {
         );
         account.remote = true;
     
-        println!("account: {:?}", account);
         Some(account)
     }
     
@@ -176,17 +184,38 @@ impl RemoteAccountLoader {
         if !self.enable || Self::ignored_account(pubkey) {
             return None;
         }
-        self.load_account_from_remote(pubkey)
-        // self.load_account_from_tests(pubkey)
+        // self.load_account_from_remote(pubkey)
+        self.load_account_from_rpc(pubkey)
+    }
+    fn load_account_from_rpc(&self, pubkey: &Pubkey) -> Option<AccountSharedData> {
+        if Self::ignored_account(pubkey) {
+            return None;
+        }
+        let result = self.rpc_client.get_account(pubkey);
+        match result {
+            Ok(account) => {
+                let mut account = AccountSharedData::create(
+                    account.lamports,
+                    account.data,
+                    account.owner,
+                    account.executable,
+                    account.rent_epoch
+                );
+                account.remote = true;
+        
+                self.account_cache.insert(pubkey.clone(), account.clone());
+                Some(account)
+            },
+            Err(e) => {
+                None
+            }
+        }
     }
 
     fn load_account_from_remote(&self, pubkey: &Pubkey) -> Option<AccountSharedData> {
         if Self::ignored_account(pubkey) {
-            print!("******* skip: {}\n", pubkey.to_string());
             return None;
         }
-        println!("load_account_from_remote: {}", pubkey.to_string());
-
         let req = json!({
             "jsonrpc": "2.0",
             "id": 1,
@@ -206,7 +235,6 @@ impl RemoteAccountLoader {
                 .header(CONTENT_TYPE, "application/json")
                 .body(req.to_string())
                 .send().unwrap();
-            println!("load_account_from_remote, response: {:?}", res.status());
             if res.status().is_success() {
                 let account_json: serde_json::Value = res.json().unwrap();
                 // println!("load_account_from_remote 1: {:?}", account_json);
@@ -222,12 +250,125 @@ impl RemoteAccountLoader {
                 Some(account)
             },
             None => {
-                println!("load_account_from_remote: failed to load account: {:?}\n", pubkey);
                 None
             }
         }
         
         
+    }
+
+    pub fn has_programdata_account(program_account: AccountSharedData) -> Option<Pubkey> {
+        if program_account.executable() && !bpf_loader_upgradeable::check_id(program_account.owner()) {
+           return None;
+        }
+
+        if let Ok(UpgradeableLoaderState::Program {
+            programdata_address,
+        }) = program_account.state()
+        {
+            return Some(programdata_address);
+        }
+
+        return None;
+    }
+
+    pub fn deactivate_account(&self, pubkey: &Pubkey) {
+        if !self.enable || Self::ignored_account(pubkey) {
+            return;
+        }
+        self.account_cache.remove(pubkey);
+    }
+
+    pub fn send_transaction_to_baselayer(&self) -> Option<Signature> {
+        let payer = Keypair::from_base58_string("5gA6JTpFziXu7py2j63arRUq1H29p6pcPMB74LaNuzcSqULPD6s1SZUS3UMPvFEE9oXmt1kk6ez3C6piTc3bwpJ6");
+        let program_id = Pubkey::from_str("13Sf7BzgXeakbweqm4mhbAWrfVYyUWXgUKo29p64wRgZ").unwrap();
+        let data: Vec<u8> = Vec::new();
+        let account = Pubkey::from_str("5coUhGpuKRon9vVUQJwYdPEQwDYe6UAtFdmxY6TZWurZ").unwrap();
+        let mut transaction = Transaction::new_with_payer(
+            &[
+                Instruction::new_with_bincode(
+                    program_id,
+                    &data,
+                    vec![
+                        // AccountMeta::new_readonly(payer.pubkey(), true),
+                        AccountMeta::new(account, false),
+                    ]
+                ),
+            ],
+            Some(&payer.pubkey()),
+        );
+        let blockhash = self.rpc_client.get_latest_blockhash().unwrap();
+        transaction.sign(&[&payer], blockhash);
+        let result = self.rpc_client.send_and_confirm_transaction(&transaction);
+        match result {
+            Ok(signature) => {
+                println!("send_transaction_to_baselayer: success {:?}", signature);
+                Some(signature)
+            },
+            Err(e) => {
+                println!("send_transaction_to_baselayer: failed: {:?}", e);
+                None
+            }
+        }
+    }
+
+}
+
+
+///unit tests for RemoteAccountLoader
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use solana_sdk::clock::Slot;
+
+    #[test]
+    fn test_remote_account_loader() {
+        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
+        let pubkey = Pubkey::from_str("").unwrap();
+        let account = loader.get_account(&pubkey);
+        assert_eq!(account.is_none(), true);
+    }
+    
+    #[test]
+    fn test_remote_account_loader2() {
+        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
+        let pubkey = Pubkey::from_str("").unwrap();
+        let account = loader.has_account(&pubkey);
+        assert_eq!(account, false);
+    }
+
+    #[test]
+    fn test_remote_account_loader3() {
+        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
+        let pubkey = Pubkey::from_str("").unwrap();
+        let account = loader.load_account(&pubkey);
+        assert_eq!(account.is_none(), true);
+    }
+
+    #[test]
+    fn test_remote_account_loader4() {
+        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
+        let pubkey = Pubkey::from_str("").unwrap();
+        loader.deactivate_account(&pubkey);
+        let account = loader.get_account(&pubkey);
+        assert_eq!(account.is_none(), true);
+    }
+    
+    #[test]
+    fn test_remote_account_loader5() {
+        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
+        let pubkey = Pubkey::from_str("").unwrap();
+        loader.deactivate_account(&pubkey);
+        let account = loader.has_account(&pubkey);
+        assert_eq!(account, false);
+    }
+
+    #[test]
+    fn test_remote_account_loader6() {
+        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
+        let pubkey = Pubkey::from_str("").unwrap();
+        let account = loader.load_account(&pubkey);
+        assert_eq!(account.is_none(), true);
     }
 
 }

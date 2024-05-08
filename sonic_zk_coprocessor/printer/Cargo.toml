@@ -12,6 +12,7 @@ edition = { workspace = true }
 [dependencies]
 chrono =  { workspace = true }
 
+
 [lib]
 crate-type = ["lib"]
 name = "sonic_printer"
