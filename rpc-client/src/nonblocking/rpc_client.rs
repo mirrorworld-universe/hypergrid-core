@@ -4195,6 +4195,7 @@ impl RpcClient {
             context,
             value: accounts,
         } = serde_json::from_value::<Response<Vec<Option<UiAccount>>>>(response)?;
+        show!(file!(), line!(), func!(), accounts.len());
         let accounts: Vec<Option<Account>> = accounts
             .into_iter()
             .map(|rpc_account| rpc_account.and_then(|a| a.decode()))
