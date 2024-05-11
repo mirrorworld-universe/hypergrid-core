@@ -163,7 +163,7 @@ pub struct AccountsCache {
     maybe_unflushed_roots: RwLock<BTreeSet<Slot>>,
     max_flushed_root: AtomicU64,
     total_size: Arc<AtomicU64>,
-    remote_loader: RemoteAccountLoader, //Sonic: using RemoteAccountLoader
+    pub remote_loader: RemoteAccountLoader, //Sonic: using RemoteAccountLoader
 }
 
 impl AccountsCache {
