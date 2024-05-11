@@ -5068,7 +5068,7 @@ impl AccountsDb {
             AccountIndexGetResult::NotFound => {
                 // Sonic: check if the pubkey is from remote in cache.
                 if ancestors.len() > 1 && self.accounts_cache.has_account_from_remote(pubkey) {
-                    println!("******AccountsDb.read_index_for_accessor_or_load_slow: {}", pubkey.to_string());
+                    println!("******AccountsDb.read_index_for_accessor_or_load_slow: {:?} {}", std::thread::current().id(), pubkey.to_string());
                     return Some((0, StorageLocation::Cached, None)); //Sonic: return a dummy slot number
                 }
                 return None;
