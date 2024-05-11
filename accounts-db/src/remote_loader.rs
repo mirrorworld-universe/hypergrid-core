@@ -209,7 +209,7 @@ impl RemoteAccountLoader {
         let mut transaction = Transaction::new_with_payer(
             &[
                 Instruction::new_with_bincode(
-                    program_id,
+                    *program_id,
                     &setlocker_data,
                     vec![
                         // AccountMeta::new_readonly(payer.pubkey(), true),
@@ -218,7 +218,7 @@ impl RemoteAccountLoader {
                     ]
                 ),
                 Instruction::new_with_bincode(
-                    program_id,
+                    *program_id,
                     &setvalue_data,
                     vec![
                         // AccountMeta::new_readonly(payer.pubkey(), true),
