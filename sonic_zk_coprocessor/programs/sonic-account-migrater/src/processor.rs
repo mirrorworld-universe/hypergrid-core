@@ -3,16 +3,11 @@ use {
     solana_sdk::{
         sonic_account_migrater::{
             instruction::ProgramInstruction,
-            program::{check_id, id},
+            program::check_id,
         },
-        clock::Slot,
-        feature_set,
         instruction::InstructionError,
         program_utils::limited_deserialize,
-        pubkey::{Pubkey, PUBKEY_BYTES},
-        system_instruction,
     },
-    std::convert::TryFrom,
 };
 
 pub const DEFAULT_COMPUTE_UNITS: u64 = 750;
