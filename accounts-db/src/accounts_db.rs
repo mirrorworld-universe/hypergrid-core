@@ -113,7 +113,6 @@ use {
         time::{Duration, Instant},
     },
     tempfile::TempDir,
-    sonic_printer::{show, func},
 };
 
 const PAGE_SIZE: u64 = 4 * 1024;

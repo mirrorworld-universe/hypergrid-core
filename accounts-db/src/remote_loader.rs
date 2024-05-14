@@ -15,6 +15,7 @@ use {
     std::{
         fmt, option_env, str::FromStr, time::Duration, thread
     },
+    sha2::{Digest, Sha256},
 };
 
 type AccountCacheKeyMap = DashMap<Pubkey, AccountSharedData>;
@@ -57,6 +58,15 @@ struct SetValueInstruction {
 struct SetLockerInstruction {
     pub instruction: [u8;8],
     pub locker: Pubkey,
+}
+
+fn hash_instruction_method(method: &str) -> [u8; 8] {
+    let mut hasher = Sha256::new();
+    hasher.update(format!("global:{}", method));
+    let result = hasher.finalize();
+    let mut hash = [0u8; 8];
+    hash.copy_from_slice(&result[..8]);
+    hash
 }
 
 /// Remote account loader.
@@ -285,11 +295,11 @@ impl RemoteAccountLoader {
         // let program_id = Pubkey::from_str(SONIC_PROGRAM_ID).unwrap();
 
         let setlocker_data = SetLockerInstruction {
-            instruction: [0x20, 0xda, 0x0f, 0x29, 0x6e, 0x40, 0xf2, 0x0f],
+            instruction: hash_instruction_method("setlocker"), //[0x20, 0xda, 0x0f, 0x29, 0x6e, 0x40, 0xf2, 0x0f],
             locker: payer.pubkey(),
         };
         let setvalue_data = SetValueInstruction {
-            instruction: [0x60, 0xca, 0x6c, 0x93, 0x6b, 0x11, 0x69, 0x5f],
+            instruction: hash_instruction_method("setvalue"), //[0x60, 0xca, 0x6c, 0x93, 0x6b, 0x11, 0x69, 0x5f],
             value,
         };
 
@@ -318,11 +328,13 @@ impl RemoteAccountLoader {
         );
         let blockhash = self.rpc_client.get_latest_blockhash().unwrap();
         transaction.sign(&[&payer], blockhash);
-        let result = self.rpc_client.send_and_confirm_transaction(&transaction);
+        let result = self.rpc_client.send_transaction(&transaction); //send_and_confirm_transaction(&transaction);
         time.stop();
         match result {
             Ok(signature) => {
                 println!("send_transaction_to_baselayer: success {:?}, {}", signature, time.as_us());
+                //reload the account
+                self.load_account_via_rpc(account);
                 Some(signature)
             },
             Err(e) => {
@@ -339,11 +351,10 @@ impl RemoteAccountLoader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use solana_sdk::clock::Slot;
 
     #[test]
     fn test_remote_account_loader() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
+        let loader = RemoteAccountLoader::new("https://api.devnet.solana.com/");
         let pubkey = Pubkey::from_str("").unwrap();
         let account = loader.get_account(&pubkey);
         assert_eq!(account.is_none(), true);
@@ -351,7 +362,7 @@ mod tests {
     
     #[test]
     fn test_remote_account_loader2() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
+        let loader = RemoteAccountLoader::new("https://api.devnet.solana.com/");
         let pubkey = Pubkey::from_str("").unwrap();
         let account = loader.has_account(&pubkey);
         assert_eq!(account, false);
@@ -359,16 +370,16 @@ mod tests {
 
     #[test]
     fn test_remote_account_loader3() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::new("https://api.devnet.solana.com/");
+        let pubkey = Pubkey::from_str(SONIC_PROGRAM_ID).unwrap();
         let account = loader.load_account(&pubkey);
         assert_eq!(account.is_none(), true);
     }
 
     #[test]
     fn test_remote_account_loader4() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::new("https://api.devnet.solana.com/");
+        let pubkey = Pubkey::from_str(SONIC_PROGRAM_ID).unwrap();
         loader.deactivate_account(&pubkey);
         let account = loader.get_account(&pubkey);
         assert_eq!(account.is_none(), true);
@@ -376,8 +387,8 @@ mod tests {
     
     #[test]
     fn test_remote_account_loader5() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::new("https://api.devnet.solana.com/");
+        let pubkey = Pubkey::from_str(SONIC_PROGRAM_ID).unwrap();
         loader.deactivate_account(&pubkey);
         let account = loader.has_account(&pubkey);
         assert_eq!(account, false);
@@ -385,8 +396,8 @@ mod tests {
 
     #[test]
     fn test_remote_account_loader6() {
-        let loader = RemoteAccountLoader::new("http://rpc.hypergrid.dev");
-        let pubkey = Pubkey::from_str("").unwrap();
+        let loader = RemoteAccountLoader::new("https://api.devnet.solana.com/");
+        let pubkey = Pubkey::from_str(SONIC_PROGRAM_ID).unwrap();
         let account = loader.load_account(&pubkey);
         assert_eq!(account.is_none(), true);
     }

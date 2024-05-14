@@ -4981,10 +4981,11 @@ impl Bank {
         let account_keys = msg.account_keys();
         let mut sonic_program: Option<&Pubkey> = None; 
         let mut account: Option<&Pubkey> = None; 
+        let remote_loader = &self.rc.accounts.accounts_db.accounts_cache.remote_loader;
         for ix in msg.instructions() {
             if let Some(program_id) = account_keys.get(ix.program_id_index.into()) {
                 println!("Bank.check_remote_accounts(): program_id: {:?}", program_id);
-                if self.rc.accounts.accounts_db.accounts_cache.remote_loader.is_sonic_program(program_id) {
+                if remote_loader.is_sonic_program(program_id) {
                     sonic_program = Some(program_id);
                     account = account_keys.get(ix.accounts[0].into());
                     break;
@@ -4998,13 +4999,13 @@ impl Bank {
         }
 
         //Sonic: check if account is from remote.
-        if !self.rc.accounts.accounts_db.accounts_cache.has_account_from_remote(account.unwrap()) {
+        if !remote_loader.has_account(account.unwrap()) {
             return None;
         }
         
         let mut signature: Option<Signature> = None;
         log_messages.as_ref().map(|log_messages| {
-            let re = Regex::new(r"NFT New Value: (\d+)").unwrap();
+            let re = Regex::new(r"Fake NFT New Value: (\d+)").unwrap();
             for log_message in log_messages.iter() {
                 println!("log_message: {:?}", log_message);
                 //Sonic: send states to baselayer
@@ -5012,7 +5013,7 @@ impl Bank {
                 if let Some(caps) = caps {
                     let value = caps.get(1).map_or("", |m| m.as_str());
                     println!("value: {}", value);
-                    signature = self.rc.accounts.accounts_db.accounts_cache.remote_loader.send_status_to_baselayer(sonic_program.unwrap(), account.unwrap(), value.parse::<u64>().unwrap());
+                    signature = remote_loader.send_status_to_baselayer(sonic_program.unwrap(), account.unwrap(), value.parse::<u64>().unwrap());
                     break;
                 }
             }
@@ -5125,26 +5126,32 @@ impl Bank {
                 if !sonic_account_migrater_program::check_id(program_id) { 
                     return;
                 }
-                let instruction = limited_deserialize(&ix.data).unwrap();
-                ix.accounts.iter().for_each(|account_index| {
-                    if msg.is_signer((*account_index).into()) || *account_index == ix.program_id_index {
+                match limited_deserialize(&ix.data) {
+                    Err(_) => {
                         return;
-                    }
-                    let mut accounts:Vec<Pubkey> = vec![];
-                    if let Some(account_key) = account_keys.get((*account_index).into()) {
-                        accounts.push(*account_key);
-                    }
-                    match instruction {
-                        sonic_account_migrater_program::instruction::ProgramInstruction::MigrateRemoteAccounts => {
-                            //load remote account...
-                            self.rc.accounts.accounts_db.accounts_cache.load_accounts_from_remote(accounts);
-                        },
-                        sonic_account_migrater_program::instruction::ProgramInstruction::DeactivateRemoteAccounts => {
-                            //deactivate remote account...
-                            self.rc.accounts.accounts_db.accounts_cache.deactivate_remote_accounts(accounts);
-                        },
-                    }
-                });
+                    },
+                    Ok(instruction) => {
+                        ix.accounts.iter().for_each(|account_index| {
+                            if msg.is_signer((*account_index).into()) || *account_index == ix.program_id_index {
+                                return;
+                            }
+                            let mut accounts:Vec<Pubkey> = vec![];
+                            if let Some(account_key) = account_keys.get((*account_index).into()) {
+                                accounts.push(*account_key);
+                            }
+                            match instruction {
+                                sonic_account_migrater_program::instruction::ProgramInstruction::MigrateRemoteAccounts => {
+                                    //load remote account...
+                                    self.rc.accounts.accounts_db.accounts_cache.load_accounts_from_remote(accounts);
+                                },
+                                sonic_account_migrater_program::instruction::ProgramInstruction::DeactivateRemoteAccounts => {
+                                    //deactivate remote account...
+                                    self.rc.accounts.accounts_db.accounts_cache.deactivate_remote_accounts(accounts);
+                                },
+                            }
+                        });
+                    },
+                }
             }
         });
     }
