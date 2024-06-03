@@ -217,7 +217,7 @@ fn main() {
                 upgrade_authority: Pubkey::default(),
                 program_path: program_path.clone(),
             });
-           
+            show!(file!(), line!(), func!(), address, Pubkey::default(), program_path);
         }
     }
 
