@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://solana.com">
-    <img alt="Solana" src="https://i.imgur.com/IKyzQ6T.png" width="250" />
+  <a href="https://sonic.game">
+    <img alt="Solana" src="https://assets-global.website-files.com/66459509d57ff3db9f95c06f/6645d6e2ec712147651b7fcc_sonic-logo.svg" width="250" />
   </a>
 </p>
 
@@ -9,7 +9,7 @@
 [![Build status](https://badge.buildkite.com/8cc350de251d61483db98bdfc895b9ea0ac8ffa4a32ee850ed.svg?branch=master)](https://buildkite.com/solana-labs/solana/builds?branch=master)
 [![codecov](https://codecov.io/gh/solana-labs/solana/branch/master/graph/badge.svg)](https://codecov.io/gh/solana-labs/solana)
 
-# Building
+# Building Sonic
 
 ## **1. Install rustc, cargo and rustfmt.**
 
